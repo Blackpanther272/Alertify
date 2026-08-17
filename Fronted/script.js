@@ -310,7 +310,7 @@ document.getElementById("submitComplaint")?.addEventListener("click", async () =
 
   try {
     // FIX 1: Changed http://localhost:5000/api/complaint → /api/complaint
-   const response = await fetch("https://alertifyy.onrender.com/api/complaint", {
+   const response = await fetch("https://alertify-backend-r8le.onrender.com/api/complaint", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -352,7 +352,7 @@ document.getElementById("checkStatus")?.addEventListener("click", async () => {
   let res;
   try {
     // FIX 1: Changed http://localhost:5000/api/complaint/ → /api/complaint/
-   res = await fetch("https://alertifyy.onrender.com/api/complaint/" + id);
+   res = await fetch("https://alertify-backend-r8le.onrender.com/api/complaint/" + id);
   } catch (e) {
     alert("Server not working");
     return;
@@ -449,7 +449,7 @@ if (!passwordRegex.test(password)) {
 let response;
 try {
   // FIX 1: Changed http://localhost:5000/api/register → /api/register
- response = await fetch("https://alertifyy.onrender.com/api/register", {
+ response = await fetch("https://alertify-backend-r8le.onrender.com/api/register", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -514,7 +514,7 @@ async function login() {
 let response;
 try {
   // FIX 1: Changed http://localhost:5000/api/login → /api/login
-response = await fetch("https://alertifyy.onrender.com/api/login", {
+response = await fetch("https://alertify-backend-r8le.onrender.com/api/login", {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
@@ -624,7 +624,7 @@ console.log("DEBUG MOBILE:", mobile);
       let res;
       try {
         // FIX 1: Changed http://localhost:5000/api/request-otp → /api/request-otp
-        res = await fetch("https://alertifyy.onrender.com/api/request-otp", {
+        res = await fetch("https://alertify-backend-r8le.onrender.com/api/request-otp", {
           method: "POST",
           headers: {"Content-Type":"application/json"},
           body: JSON.stringify({ mobile })
@@ -651,7 +651,7 @@ console.log("DEBUG MOBILE:", mobile);
 
     else if (fpStep === 2) {
       // FIX 1: Changed http://localhost:5000/api/verify-otp → /api/verify-otp
-      const res = await fetch("https://alertifyy.onrender.com/api/verify-otp", {
+      const res = await fetch("https://alertify-backend-r8le.onrender.com/api/verify-otp", {
         method: "POST",
         headers: {"Content-Type":"application/json"},
         body: JSON.stringify({ mobile, otp })
@@ -676,7 +676,7 @@ console.log("DEBUG MOBILE:", mobile);
       }
       try {
         // FIX 1: Changed http://localhost:5000/api/reset-password → /api/reset-password
-        const res = await fetch("https://alertifyy.onrender.com/api/reset-password", {
+        const res = await fetch("https://alertify-backend-r8le.onrender.com/api/reset-password", {
           method: "POST",
           headers: {"Content-Type":"application/json"},
           body: JSON.stringify({ mobile, newPassword })
@@ -1053,7 +1053,7 @@ async function submitDamageReport() {
     if (photoEl.files[0]) formData.append("photo", photoEl.files[0]);
 
     // 2. Pass the Authorization Header containing the Token
-    const res = await fetch("https://alertifyy.onrender.com/api/damage-report", { 
+    const res = await fetch("https://alertify-backend-r8le.onrender.com/api/damage-report", { 
       method: "POST",
       headers: {
         "Authorization": "Bearer " + token
@@ -1115,7 +1115,7 @@ async function checkReportStatus() {
   }
 
   try {
-    var res  = await fetch("https://alertifyy.onrender.com/api/damage-report/" + encodeURIComponent(id));
+    var res  = await fetch("https://alertify-backend-r8le.onrender.com/api/damage-report/" + encodeURIComponent(id));
     var data = await res.json();
 
     if (!res.ok) {
@@ -1355,7 +1355,7 @@ async function sendSosNow() {
   if (!isPreLogin && token) {
     try {
       const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-      const apiUrl = isLocal ? "http://localhost:5000/api/user/profile" : "https://alertifyy.onrender.com/api/user/profile";
+      const apiUrl = isLocal ? "http://localhost:5000/api/user/profile" : "https://alertify-backend-r8le.onrender.com/api/user/profile";
       const userRes = await fetch(apiUrl, { headers: { Authorization: "Bearer " + token } });
       if (userRes.ok) {
         const u = await userRes.json();
@@ -1388,7 +1388,7 @@ async function sendSosNow() {
   if (navigator.onLine) {
     try {
       const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-      const apiUrl = isLocal ? "http://localhost:5000/api/sos" : "https://alertifyy.onrender.com/api/sos";
+      const apiUrl = isLocal ? "http://localhost:5000/api/sos" : "https://alertify-backend-r8le.onrender.com/api/sos";
       await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -1429,7 +1429,7 @@ async function processOfflineSosQueue() {
   if (queue.length === 0) return;
 
   const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const apiUrl = isLocal ? "http://localhost:5000/api/sos" : "https://alertifyy.onrender.com/api/sos";
+  const apiUrl = isLocal ? "http://localhost:5000/api/sos" : "https://alertify-backend-r8le.onrender.com/api/sos";
 
   while (queue.length > 0) {
     var item = queue[0];
@@ -1656,7 +1656,7 @@ async function openProfileModal() {
 
   // 3. Auto-detect Localhost vs Live Render server
   const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const apiUrl = isLocal ? "http://localhost:5000/api/user/profile" : "https://alertifyy.onrender.com/api/user/profile";
+  const apiUrl = isLocal ? "http://localhost:5000/api/user/profile" : "https://alertify-backend-r8le.onrender.com/api/user/profile";
 
   try {
     const res = await fetch(apiUrl, {
@@ -1722,7 +1722,7 @@ async function saveProfileChanges() {
   }
 
   try {
-    const res = await fetch("https://alertifyy.onrender.com/api/user/profile", {
+    const res = await fetch("https://alertify-backend-r8le.onrender.com/api/user/profile", {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
@@ -1764,7 +1764,7 @@ async function deleteUserAccount() {
   const token = localStorage.getItem("token");
   try {
     const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    const apiUrl = isLocal ? "http://localhost:5000/api/user/profile" : "https://alertifyy.onrender.com/api/user/profile";
+    const apiUrl = isLocal ? "http://localhost:5000/api/user/profile" : "https://alertify-backend-r8le.onrender.com/api/user/profile";
 
     const res = await fetch(apiUrl, {
       method: "DELETE",
@@ -1820,7 +1820,7 @@ async function loadCitizenBroadcasts() {
   if (!banner) return;
 
   const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
 
   try {
     const res = await fetch(`${baseUrl}/broadcasts`);
@@ -1867,7 +1867,7 @@ async function loadCitizenShelters() {
   if (!container) return;
 
   const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
 
   try {
     const res = await fetch(`${baseUrl}/shelters`);
@@ -1949,7 +1949,7 @@ async function submitSafeCheckIn() {
   }
 
   const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
 
   try {
     const res = await fetch(`${baseUrl}/safety/mark-safe`, {
@@ -1990,7 +1990,7 @@ async function searchSafetyRegistry() {
   container.innerHTML = "<p style='color:#64748b; text-align:center; padding:12px;'>⏳ Searching registry...</p>";
 
   const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
 
   try {
     const res = await fetch(`${baseUrl}/safety/search?query=${encodeURIComponent(query)}`);
