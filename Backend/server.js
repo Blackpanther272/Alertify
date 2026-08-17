@@ -1260,40 +1260,20 @@ app.put("/api/admin/damage-report/:id", verifyToken, verifyAdmin, async (req, re
   }
 });
 
-// ===== CHECK LICENSE (remote) =====
-app.get("/check-license", async (req, res) => {
-  const { key, device, ip } = req.query;
-  const user = await License.findOne({ licenseKey: key });
-  if (!user) return res.send("invalid");
-  if (user.status !== "active") return res.send("blocked");
-  if (!user.allowedDevice || user.allowedDevice.toLowerCase() !== device.toLowerCase()) {
-    return res.send("wrong device");
-  }
-  await Logs.create({ licenseKey: key, ip, device, time: new Date() });
-  res.send("valid");
-});
+
 
 // ===== LOG SERVER START =====
 async function logServerStart() {
   try {
-    const mac = "server";
-    const ip  = await getIP();
+    const ip = await getIP();
     console.log("===== SERVER START =====");
-    console.log("MAC:", mac);
     console.log("Time:", new Date());
     console.log("IP:", ip);
     console.log("========================");
-    await Logs.create({
-      licenseKey: "SERVER_RUN",
-      device: mac,
-      ip,
-      time: new Date()
-    });
   } catch (e) {
     console.log("Log error (non-fatal):", e.message);
   }
 }
-
 
 
 app.use((err, req, res, next) => {
@@ -1539,10 +1519,9 @@ app.put("/api/admin/profile", async (req, res) => {
     const updateFields = { name };
     if (mobile) updateFields.mobile = mobile;
 
-    if (newPassword && newPassword.trim().length >= 6) {
-      const bcrypt = require("bcryptjs");
-      updateFields.password = await bcrypt.hash(newPassword.trim(), 10);
-    }
+   if (newPassword && newPassword.trim().length >= 6) {
+  updateFields.password = await bcrypt.hash(newPassword.trim(), 10);
+}
 
     const updatedAdmin = await User.findByIdAndUpdate(
       decoded.id,
