@@ -134,7 +134,7 @@ async function doRegister() {
 
   try {
     const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    const apiUrl = isLocal ? "http://localhost:5000/api/register" : "https://alertifyy.onrender.com/api/register";
+    const apiUrl = isLocal ? "http://localhost:5000/api/register" : "https://alertify-backend-r8le.onrender.com/api/register";
 
     const res = await fetch(apiUrl, {
       method: "POST",
