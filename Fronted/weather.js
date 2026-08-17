@@ -215,9 +215,9 @@ function renderHighlights(cur, fore, tz) {
 async function loadWeatherData(lat, lon) {
   try {
    const [curRes, foreRes, aqiRes] = await Promise.all([
-  fetch(`https://alertifyy.onrender.com/api/weather?lat=${lat}&lng=${lon}`),
-  fetch(`https://alertifyy.onrender.com/api/forecast?lat=${lat}&lng=${lon}`),
-  fetch(`https://alertifyy.onrender.com/api/aqi?lat=${lat}&lng=${lon}`)
+  fetch(`https://alertify-backend-r8le.onrender.com/api/weather?lat=${lat}&lng=${lon}`),
+  fetch(`https://alertify-backend-r8le.onrender.com/api/forecast?lat=${lat}&lng=${lon}`),
+  fetch(`https://alertify-backend-r8le.onrender.com/api/aqi?lat=${lat}&lng=${lon}`)
 ]);
 
     const cur  = await curRes.json();
