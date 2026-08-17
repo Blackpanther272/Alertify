@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="appName">Disaster Management — Live Command Center</title>
+
+  <!-- Fixes the favicon 404 error -->
+  <link rel="icon" href="data:,">
+
+ 
+
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+        integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+        crossorigin="anonymous" />
+  <link rel="stylesheet" href="map.css">
+</head>
+<body>
+
+  <!-- Network Offline Banner -->
+  <div id="offlineBanner" class="offline-banner" role="status" aria-live="assertive" style="display:none;">
+    ⚠️ Network connection lost. Displaying cached disaster data.
+  </div>
+
+  <!-- Top Navigation Header -->
+  <nav role="navigation" aria-label="Main Navigation">
+    <div class="nav-brand">
+      <span aria-hidden="true">🛡️</span>
+      <span class="acc" data-i18n="appName">Disaster Management Command Center</span>
+    </div>
+  </nav>
+
+  <!-- Emergency Top Alert Banner -->
+  <div id="topBanner" class="top-banner" role="alert" aria-live="assertive" style="display:none">
+    <div class="banner-l">
+      <span id="bannerIco" class="b-ico" aria-hidden="true">⚡</span>
+      <span id="bannerMsg">Critical Disaster Alert</span>
+    </div>
+    <button class="b-btn" id="bannerViewBtn" data-i18n="viewDetails">View Details</button>
+  </div>
+
+  <!-- Main Page Grid Workspace -->
+  <div class="page-grid">
+
+    <!-- LEFT COLUMN: Map, Filters, Live Statistics, Timeline -->
+    <div class="left-col">
+
+      <!-- Interactive Filter Bar -->
+      <div class="filter-row" role="toolbar" aria-label="Map Layer Controls">
+        <button class="f-btn active" data-layer="quake" aria-pressed="true" aria-label="Toggle Earthquakes Layer">
+          <span aria-hidden="true">🌍</span> <span data-i18n="filterQuake">Quakes</span>
+        </button>
+        <button class="f-btn active" data-layer="rain" aria-pressed="true" aria-label="Toggle Rainfall Layer">
+          <span aria-hidden="true">🌧️</span> <span data-i18n="filterRain">Rain</span>
+        </button>
+        <button class="f-btn active" data-layer="wind" aria-pressed="true" aria-label="Toggle Wind Layer">
+          <span aria-hidden="true">💨</span> <span data-i18n="filterWind">Wind</span>
+        </button>
+        <div class="live-pill" role="status" aria-label="System status live">
+          <span class="live-dot" aria-hidden="true"></span> LIVE
+        </div>
+        <div class="map-clock" id="mapClock" role="timer" aria-live="off">--:-- --</div>
+      </div>
+
+      <!-- Leaflet Map Canvas -->
+      <div id="map" role="region" aria-label="Interactive Live Emergency Map" tabindex="0"></div>
+
+      <!-- Real-Time Environmental Statistics Strip -->
+      <div class="stat-strip" role="region" aria-label="Live Environmental Statistics">
+        <div class="ss-item">
+          <span class="ss-ico" aria-hidden="true">🌡️</span>
+          <div>
+            <div class="ss-val" id="ssTemp"><span class="skeleton skeleton-text"></span></div>
+            <div class="ss-lbl" data-i18n="ssTemp">Temperature</div>
+          </div>
+        </div>
+        <div class="ss-item">
+          <span class="ss-ico" aria-hidden="true">💧</span>
+          <div>
+            <div class="ss-val" id="ssHum"><span class="skeleton skeleton-text"></span></div>
+            <div class="ss-lbl" data-i18n="ssHum">Humidity</div>
+          </div>
+        </div>
+        <div class="ss-item">
+          <span class="ss-ico" aria-hidden="true">💨</span>
+          <div>
+            <div class="ss-val" id="ssWind"><span class="skeleton skeleton-text"></span></div>
+            <div class="ss-lbl" id="ssWindDir">Direction</div>
+          </div>
+        </div>
+        <div class="ss-item">
+          <span class="ss-ico" aria-hidden="true">👁️</span>
+          <div>
+            <div class="ss-val" id="ssVis"><span class="skeleton skeleton-text"></span></div>
+            <div class="ss-lbl" data-i18n="ssVis">Visibility</div>
+          </div>
+        </div>
+        <div class="ss-item">
+          <span class="ss-ico" aria-hidden="true">🔵</span>
+          <div>
+            <div class="ss-val" id="ssPres"><span class="skeleton skeleton-text"></span></div>
+            <div class="ss-lbl" data-i18n="ssPres">Pressure</div>
+          </div>
+        </div>
+        <div class="ss-item">
+          <span class="ss-ico" aria-hidden="true">🌿</span>
+          <div>
+            <div class="ss-val" id="ssAqi"><span class="skeleton skeleton-text"></span></div>
+            <div class="ss-lbl" id="ssAqiLbl">AQI</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Disaster History Timeline Section -->
+      <section class="records-section" aria-labelledby="recordsTitle">
+        <div class="sec-hdr">
+          <h2 id="recordsTitle" data-i18n="recordsTitle">Historical Disaster Registry</h2>
+        </div>
+        <div class="timeline-container" id="timelineContainer">
+          <!-- Populated dynamically by JS -->
+        </div>
+      </section>
+
+    </div><!-- End Left Column -->
+
+    <!-- RIGHT COLUMN: Real-Time Alerts Panel -->
+    <aside class="right-col" aria-label="Active Live Alerts Panel">
+      <div class="panel-hdr">
+        <span data-i18n="liveAlerts">Active Alerts</span>
+        <span class="a-count" id="aCount" role="status" aria-label="Alert count">0</span>
+      </div>
+
+      <!-- Environmental Condition Highlights -->
+      <div class="cond-summary" id="condSummary" role="region" aria-label="Summary of Local Conditions">
+        <div class="cond-row"><span class="cond-ico" aria-hidden="true">🌧️</span><div><div class="cond-name" data-i18n="condRain">Rain Rate</div><div class="cond-val" id="condRain">—</div></div></div>
+        <div class="cond-row"><span class="cond-ico" aria-hidden="true">🌍</span><div><div class="cond-name" data-i18n="condQuake">Seismic Activity</div><div class="cond-val" id="condQuake">—</div></div></div>
+        <div class="cond-row"><span class="cond-ico" aria-hidden="true">⚡</span><div><div class="cond-name" data-i18n="condStorm">Thunderstorm</div><div class="cond-val" id="condStorm">—</div></div></div>
+        <div class="cond-row"><span class="cond-ico" aria-hidden="true">🌊</span><div><div class="cond-name" data-i18n="condFlood">Flood Risk</div><div class="cond-val" id="condFlood">—</div></div></div>
+        <div class="cond-row"><span class="cond-ico" aria-hidden="true">🔥</span><div><div class="cond-name" data-i18n="condHeat">Heat Index</div><div class="cond-val" id="condHeat">—</div></div></div>
+        <div class="cond-row"><span class="cond-ico" aria-hidden="true">💨</span><div><div class="cond-name" data-i18n="condWind">Wind Threat</div><div class="cond-val" id="condWind">—</div></div></div>
+        <div class="cond-row"><span class="cond-ico" aria-hidden="true">🌀</span><div><div class="cond-name" data-i18n="condCyclone">Cyclone Risk</div><div class="cond-val" id="condCyclone">—</div></div></div>
+      </div>
+
+      <div class="divider" role="separator"></div>
+
+      <!-- Dynamic Emergency Alert Cards Feed -->
+      <div class="alerts-list" id="alertsList" role="feed" aria-live="polite" aria-busy="false">
+        <div class="no-alerts" data-i18n="loadingAlerts">Initializing live disaster feed…</div>
+      </div>
+
+      <!-- Severity Level Accessibility Legend -->
+      <div class="sev-legend" role="note" aria-label="Alert Severity Legend">
+        <div class="sev-item"><span class="sev-dot red" aria-hidden="true"></span><span>🔴 High Risk</span></div>
+        <div class="sev-item"><span class="sev-dot org" aria-hidden="true"></span><span>🟠 Medium Risk</span></div>
+        <div class="sev-item"><span class="sev-dot grn" aria-hidden="true"></span><span>🟢 Low Risk</span></div>
+      </div>
+    </aside>
+
+  </div><!-- End Page Grid -->
+
+  <!-- Geolocation & Search Modal Overlay -->
+  <div id="locOverlay" class="loc-overlay" role="dialog" aria-modal="true" aria-labelledby="locTitle">
+    <div class="loc-box">
+      <div class="loc-icon" aria-hidden="true">📍</div>
+      <h3 id="locTitle" data-i18n="locTitle">Acquire Location Access</h3>
+      <p data-i18n="locDesc">Location data is required to calculate accurate disaster distances and present hyper-local alerts.</p>
+      
+      <button id="locBtn" class="loc-btn" data-i18n="locBtn">📍 Enable GPS Location</button>
+      <p id="locErr" class="loc-err" role="alert" style="display:none"></p>
+
+      <!-- OpenStreetMap Village / Town Search Fallback -->
+      <div class="search-fallback">
+        <p class="search-title">📶 GPS signal weak? Search your village or locality:</p>
+        <div class="search-input-group">
+          <input
+            id="villageInput"
+            type="text"
+            placeholder="e.g. Janla, Khordha"
+            aria-label="Search village or locality"
+            autocomplete="off"
+          />
+          <button id="villageSearchBtn">🔍 Search</button>
+        </div>
+        <p class="search-sub">Powered by OpenStreetMap — Free & Global</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Corrected Leaflet JS with exact matched integrity hash -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+          integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+          crossorigin="anonymous" defer></script>
+          
+  <!-- Leaflet Heat Plugin (Integrity intentionally omitted to prevent blocking) -->
+  <script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"
+          crossorigin="anonymous" defer></script>
+          
+  <script src="map.js" defer></script>
+</body>
+</html>

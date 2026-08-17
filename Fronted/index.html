@@ -1,0 +1,539 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n="appName">Alertify</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="manifest" href="manifest.json" />
+  <meta name="theme-color" content="#1e3a8a" />
+  <link rel="icon" href="icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="mobile-web-app-capable" content="yes">
+</head>
+<body>
+<!-- 🌐 Global Floating Theme Toggle Button -->
+<button id="themeToggle" class="global-theme-btn" title="Toggle Theme">🌙</button>
+  <!-- File Complaint Popup -->
+  <div class="popup-overlay" id="complaintPopup">
+    <div class="popup-box" style="position:relative;">
+      <button type="button" onclick="complaintPopup.classList.remove('active')"style="position:absolute;top:10px;right:12px;background:none;border:none;font-size:20px;cursor:pointer;color:#666;line-height:1;" title="Close">✕</button>
+      <h3 data-i18n="complaintTitle">File a Complaint</h3>
+      <textarea id="complaintText" rows="4" data-i18n-placeholder="complaintPlaceholder"></textarea>
+      <button id="submitComplaint" data-i18n="complaintSubmit">Submit</button>
+      <p id="complaintResult" style="margin-top:10px;font-weight:bold;color:#007bff;"></p>
+    </div>
+  </div>
+
+  <!-- Track Status Popup -->
+  <div class="popup-overlay" id="trackPopup">
+    <div class="popup-box" style="position:relative;">
+      <button type="button" onclick="trackPopup.classList.remove('active')" style="position:absolute;top:10px;right:12px;background:none;border:none;font-size:20px;cursor:pointer;color:#666;line-height:1;" title="Close">✕</button>
+      <h3 data-i18n="trackComplaintTitle">Track Complaint Status</h3>
+      <input type="text" id="complaintIdInput" data-i18n-placeholder="trackPlaceholder">
+      <button id="checkStatus" data-i18n="trackCheck">Check Status</button>
+      <p id="statusResult" style="margin-top:10px;font-weight:bold;"></p>
+    </div>
+  </div>
+
+  <!-- Role Selection -->
+  <div id="roleSelection" class="center">
+    <h1 data-i18n="welcomeTitle">Alertify</h1>
+    <p data-i18n="selectRole">Select your role to continue</p>
+
+    <!-- PRE-LOGIN EMERGENCY SOS -->
+    <button type="button" onclick="setTimeout(preLoginSOS, 200)" id="preLoginSOSBtn" data-i18n="sosBtnLabel"
+      style="background:linear-gradient(135deg,#dc2626,#b91c1c);width:100%;max-width:320px;display:block;margin:0 auto 10px;font-size:16px;padding:16px;border-radius:12px;box-shadow:0 6px 20px rgba(220,38,38,0.45);animation:sosPulse 2s infinite;">
+      🆘 EMERGENCY SOS — No Login Needed
+    </button>
+
+    <!-- OFFLINE EMERGENCY NUMBERS -->
+    <div id="emergencyNumbers"
+      style="background:#fff;border-radius:12px;padding:14px 16px;margin:0 auto 16px;max-width:320px;box-shadow:0 4px 14px rgba(0,0,0,0.1);text-align:left;">
+      <p data-i18n="emergencyNums"
+        style="font-weight:700;color:#dc2626;font-size:13px;margin:0 0 8px;">
+        📞 Emergency Numbers — Call Direct (No Internet)
+      </p>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;">
+        <a href="tel:112" style="background:#dc2626;color:white;padding:8px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">
+          📞 112<br><small data-i18n="numEmergency">Emergency</small>
+        </a>
+        <a href="tel:100" style="background:#1d4ed8;color:white;padding:8px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">
+          📞 100<br><small data-i18n="numPolice">Police</small>
+        </a>
+        <a href="tel:102" style="background:#16a34a;color:white;padding:8px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">
+          📞 102<br><small data-i18n="numAmbulance">Ambulance</small>
+        </a>
+        <a href="tel:101" style="background:#ea580c;color:white;padding:8px;border-radius:8px;text-decoration:none;font-weight:700;font-size:14px;text-align:center;">
+          📞 101<br><small data-i18n="numFire">Fire Brigade</small>
+        </a>
+      </div>
+    </div>
+
+    <a href="user-login.html" data-i18n="userLogin"
+      style="display:block;width:100%;max-width:320px;margin:6px auto 0;padding:13px;background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;border-radius:12px;text-decoration:none;font-size:15px;font-weight:700;text-align:center;">
+      👤 User Login
+    </a>
+    <a href="admin-login.html" data-i18n="adminLogin"
+      style="display:block;width:100%;max-width:320px;margin:10px auto 0;padding:13px;background:linear-gradient(135deg,#7c3aed,#6d28d9);color:white;border-radius:12px;text-decoration:none;font-size:15px;font-weight:700;text-align:center;box-shadow:0 4px 14px rgba(124,58,237,0.3);">
+      🛡️ Admin Login
+    </a>
+    <a href="ngo.html" data-i18n="ngoLogin"
+      style="display:block;width:100%;max-width:320px;margin:10px auto 0;padding:13px;background:linear-gradient(135deg,#0891b2,#0e7490);color:white;border-radius:12px;text-decoration:none;font-size:15px;font-weight:700;text-align:center;box-shadow:0 4px 14px rgba(8,145,178,0.3);">
+      🤝 NGO Login / Register
+    </a>
+  </div>
+
+  <!-- Login Page -->
+  <div id="loginPage" class="hidden center">
+    <h2 id="loginTitle" data-i18n="userLoginTitle">Login</h2>
+    <input type="text" id="loginUser" data-i18n-placeholder="userLoginEmailPlaceholder" required />
+    <div class="password-wrapper">
+      <input type="password" id="loginPass" data-i18n-placeholder="userLoginPassPlaceholder" required />
+      <span onclick="togglePassword('loginPass', this)">👁</span>
+    </div>
+    <small data-i18n="userLoginHint" style="color:red;">Use the same strong password you created during registration.</small>
+   <button type="button" onclick="login()"  data-i18n="userLoginBtn">Login</button>
+    <p>
+      <span data-i18n="userLoginNewHere">New here?</span>
+      <a href="#" onclick="showRegisterForm()" data-i18n="userLoginRegister">Register Here</a>
+    </p>
+    <p><a href="#" onclick="forgotPassword()" data-i18n="userLoginForgot">Forgot Password?</a></p>
+  </div>
+
+  <!-- Register Page -->
+  <div id="registerPage" class="hidden center">
+    <h2 id="registerTitle" data-i18n="userRegTitle">Register</h2>
+    <input type="text" id="regName" data-i18n-placeholder="userRegNamePlaceholder" required />
+    <input type="email" id="regEmail" data-i18n-placeholder="userRegEmailPlaceholder" />
+    <div class="mobileInput">
+      <span data-i18n="countryCode">+91</span>
+      <input
+        type="text"
+        id="regMobile"
+        data-i18n-placeholder="userRegMobilePlaceholder"
+        maxlength="10"
+        inputmode="numeric"
+        pattern="[0-9]{10}"
+        required
+        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+      />
+    </div>
+    <div class="password-wrapper">
+      <input type="password" id="regPass" data-i18n-placeholder="userRegPassPlaceholder" required />
+      <span onclick="togglePassword('regPass', this)">👁</span>
+    </div>
+    <small data-i18n="userRegPassHint" style="color:red;">Password must be minimum 8 characters...</small>
+    <input type="password" id="regCpass" data-i18n-placeholder="userRegCpassPlaceholder" required />
+    <input type="password" id="secretKey" data-i18n-placeholder="adminLoginHint" style="display:none;" />
+    <button type="button" onclick="register()" data-i18n="userRegBtn">Register</button>
+    <p><a href="#" onclick="backToLogin()" data-i18n="back">Back to Login</a></p>
+  </div>
+
+  <!-- User Dashboard -->
+  <div id="dashboard" class="hidden">
+
+    <div id="sidebarOverlay" class="sidebar-overlay" onclick="closeSidebar()"></div>
+
+    <nav id="sidebar" class="sidebar">
+      <div class="sidebar-header">
+        <span class="sidebar-title" data-i18n="sidebarTitle">🌐 Disaster App</span>
+       <button type="button" class="sidebar-close" onclick="closeSidebar()">✕</button>
+      </div>
+      <div class="sidebar-user">
+        <div class="avatar-circle sidebar-avatar" id="sidebarAvatar">U</div>
+        <div>
+          <p class="sidebar-username" id="sidebarName" data-i18n="sidebarCitizen">User</p>
+          <p class="sidebar-role" data-i18n="sidebarCitizen">Citizen</p>
+        </div>
+      </div>
+      <div class="sidebar-links">
+        <a href="#" class="sidebar-link active" data-i18n="sidebarHome">🏠 Home</a>
+        <a href="#" class="sidebar-link" id="liveInfoBtn" data-i18n="sidebarLiveInfo">🗺️ Live Info</a>
+        <a href="weather.html" class="sidebar-link" data-i18n="sidebarWeather">🌤️ Live Weather</a>
+        <a href="Safezones.html" class="sidebar-link" data-i18n="sidebarSafeZones">🛟 Safe Zones</a>
+        <a href="Firstaid.html" class="sidebar-link" data-i18n="sidebarFirstAid">🩹 First Aid</a>
+        <a href="contact.html" class="sidebar-link" data-i18n="sidebarContact">✉️ Contact Us</a>
+        <a href="saved-contacts.html" class="sidebar-link">📞 Saved Contacts</a>
+        <div class="sidebar-divider"></div>
+        <a href="#" class="sidebar-link" id="sidebarComplaintBtn" data-i18n="sidebarComplaint">📋 File Complaint</a>
+        <a href="#" class="sidebar-link" id="sidebarTrackBtn" data-i18n="sidebarTrack">🔍 Track Status</a>
+        <a href="#" class="sidebar-link" id="sidebarDamageBtn" data-i18n="sidebarDamage">🏚️ Damage Report</a>
+        <a href="#" class="sidebar-link" id="sidebarTrackRptBtn" data-i18n="sidebarTrackRpt">📊 Track My Report</a>
+        <div class="sidebar-divider"></div>
+      </div>
+    </nav>
+
+    <header class="dash-header">
+      <button class="hamburger" onclick="openSidebar()">
+        <span></span><span></span><span></span>
+      </button>
+      <h1 class="dash-title" data-i18n="dashTitle">Disaster Management</h1>
+      <div class="avatar-wrap">
+        <div class="avatar-circle" id="userAvatar" onclick="toggleAvatarMenu()">U</div>
+        <div class="avatar-menu hidden" id="avatarMenu">
+  <p id="avatarFullName"></p>
+  <button type="button" onclick="openProfileModal()">👤 Edit Profile</button>
+  <button type="button" onclick="deleteUserAccount()" style="color:#dc2626;font-weight:700;">🗑️ Delete Account</button>
+  <button type="button" onclick="logoutUser()">⎋ Logout</button>
+</div>
+      </div>
+    </header>
+
+    <main class="dash-main">
+  <!-- 📢 PUBLIC EMERGENCY BROADCAST BANNER -->
+      <div id="userBroadcastBanner" style="display:none; margin: 0 0 16px 0; padding: 14px 18px; border-radius: 12px; font-weight: 700; font-size: 14px; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.06); animation: fadeInToast 0.3s ease;"></div>
+
+
+      <div class="dash-welcome">
+        <h2 id="welcomeMsg">Welcome! 👋</h2>
+        <p data-i18n="staySafe">Stay safe and informed during emergencies.</p>
+      </div>
+
+      <!-- 🎛️ Action Cards Grid -->
+      <div class="action-grid">
+        <!-- 1. Send SOS -->
+        <button type="button" id="sosButton" class="action-btn sos-btn">
+          <span class="action-icon">🚨</span>
+          <span class="action-label" data-i18n="sendSos">Send SOS</span>
+        </button>
+<!-- 🟢 "I Am Safe" Button -->
+      <button type="button" onclick="openSafeCheckInModal()" class="action-btn" style="background: linear-gradient(135deg, #16a34a, #15803d); color: white; border: none; cursor: pointer;">
+        <span class="action-icon">🟢</span>
+        <span class="action-label">I Am Safe</span>
+      </button>
+        <!-- 2. Live Weather -->
+        <a href="weather.html" class="action-btn weather-btn" style="text-decoration:none; background: linear-gradient(135deg, #f59e0b, #d97706); color: white;">
+          <span class="action-icon">🌤️</span>
+          <span class="action-label" data-i18n="sidebarWeather">Live Weather</span>
+        </a>
+
+        <!-- 3. Live Info -->
+        <a href="map.html" class="action-btn info-btn" style="text-decoration:none; background: linear-gradient(135deg, #8b5cf6, #6d28d9); color: white;">
+          <span class="action-icon">🗺️</span>
+          <span class="action-label" data-i18n="sidebarLiveInfo">Live Info</span>
+        </a>
+
+        <!-- 4. First Aid -->
+        <a href="Firstaid.html" class="action-btn aid-btn" style="text-decoration:none; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white;">
+          <span class="action-icon">🩹</span>
+          <span class="action-label" data-i18n="firstAid">First Aid</span>
+        </a>
+
+        <!-- 5. Safe Zones -->
+        <a href="Safezones.html" class="action-btn safe-btn" style="text-decoration:none; background: linear-gradient(135deg, #0891b2, #0e7490); color: white;">
+          <span class="action-icon">🛟</span>
+          <span class="action-label" data-i18n="safeZones">Safe Zones</span>
+        </a>
+
+        <!-- 6. More / Less Toggle Card -->
+        <button type="button" id="toggleMoreCardsBtn" onclick="toggleMoreCards()" class="action-btn more-btn" style="background: linear-gradient(135deg, #10b981, #059669); color: white; cursor: pointer; border: none;">
+          <span class="action-icon" id="moreCardIcon">➕</span>
+          <span class="action-label" id="moreCardLabel">More</span>
+        </button>
+      </div>
+
+      <!-- 📦 Extra Cards Container (Toggled with More/Less) -->
+      <div id="extraCardsGrid" class="action-grid" style="display: none; margin-top: 16px;">
+        <a href="saved-contacts.html" class="action-btn" style="text-decoration:none; background: linear-gradient(135deg, #059669, #047857); color: white;">
+          <span class="action-icon">📞</span>
+          <span class="action-label">Saved Contacts</span>
+        </a>
+<!-- 🔍 Search Safety Registry -->
+      <button type="button" onclick="openSafetySearchModal()" class="action-btn" style="background: linear-gradient(135deg, #059669, #047857); color: white; border:none; cursor:pointer;">
+        <span class="action-icon">🔍</span>
+        <span class="action-label">Safety Registry</span>
+      </button>
+
+
+        <!-- 7. Damage Report -->
+        <button type="button" id="damageReportBtn" class="action-btn damage-btn" style="background: linear-gradient(135deg, #ea580c, #c2410c); color: white;">
+          <span class="action-icon">🏚️</span>
+          <span class="action-label" data-i18n="damageReport">Damage Report</span>
+        </button>
+
+        <!-- 8. Track My Damage Report -->
+        <button type="button" onclick="openTrackReport()" class="action-btn track-btn" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: white;">
+          <span class="action-icon">📊</span>
+          <span class="action-label" data-i18n="sidebarTrackRpt">Track Report</span>
+        </button>
+
+        <!-- 9. File Complaint -->
+        <button type="button" id="sidebarComplaintBtn2" class="action-btn complaint-btn" style="background: linear-gradient(135deg, #9333ea, #7e22ce); color: white;">
+          <span class="action-icon">📋</span>
+          <span class="action-label" data-i18n="fileComplaint">File Complaint</span>
+        </button>
+
+        <!-- 10. Track Complaint Status -->
+        <button type="button" onclick="document.getElementById('trackPopup').classList.add('active')" class="action-btn" style="background: linear-gradient(135deg, #3b82f6, #1d4ed8); color: white;">
+          <span class="action-icon">🔍</span>
+          <span class="action-label" data-i18n="sidebarTrack">Track Status</span>
+        </button>
+
+        <!-- 11. Contact Us -->
+        <a href="contact.html" class="action-btn" style="text-decoration:none; background: linear-gradient(135deg, #64748b, #475569); color: white;">
+          <span class="action-icon">✉️</span>
+          <span class="action-label" data-i18n="sidebarContact">Contact Us</span>
+        </a>
+      </div>
+<!-- 🏠 Relief Shelters Card -->
+        <button type="button" onclick="openSheltersPopup()" class="action-btn" style="background: linear-gradient(135deg, #0d9488, #0f766e); color: white; border:none; cursor:pointer;">
+          <span class="action-icon">🏠</span>
+          <span class="action-label">Relief Camps</span>
+        </button>
+
+
+      <div class="contacts-section">
+        <div class="section-header">
+          <h3 data-i18n="emergencyContacts">📞 Emergency Contacts</h3>
+          <div style="display:flex;gap:8px;">
+            <button id="addContact" class="btn-small" data-i18n="addContact">+ Add</button>
+           <a href="saved-contacts.html" class="btn-small btn-amber" style="text-decoration:none; display:inline-flex; align-items:center;">View All</a>
+          </div>
+        </div>
+        <div id="contactForm" class="hidden contact-form-box">
+          <input type="text" id="contactName" data-i18n-placeholder="contactName" />
+          <input type="tel" id="contactNumber" data-i18n-placeholder="phoneNumber" />
+         <button type="button" onclick="saveContact()"  class="btn-save" data-i18n="save">💾 Save</button>
+        </div>
+        <ul id="contactList" class="contact-list"></ul>
+        <div id="allContacts" class="hidden">
+          <h3 data-i18n="allContacts" style="margin:16px 0 8px;font-size:15px;color:#1e293b;">📋 All Emergency Contacts</h3>
+          <ul id="allContactList" class="contact-list"></ul>
+        </div>
+      </div>
+    </main>
+
+    <footer class="dash-footer">
+      <p data-i18n="copyright">© 2026 Disaster Management System | College Major Project</p>
+    </footer>
+  </div>
+
+  <!-- Forgot Password Popup -->
+  <div class="popup-overlay" id="forgotPopup">
+    <div class="popup-box">
+      <h3 data-i18n="forgotTitle">Reset Password</h3>
+      <input type="text" id="fpMobile" data-i18n-placeholder="forgotMobilePlaceholder">
+      <input type="text" id="fpOtp" class="hidden" data-i18n-placeholder="forgotOtpPlaceholder">
+      <input type="text" id="fpNewPassword" class="hidden" data-i18n-placeholder="forgotNewPassPlaceholder">
+      <button id="fpBtn" data-i18n="forgotSendOtp">Send OTP</button>
+      <p data-i18n="cancel" style="cursor:pointer;" onclick="document.getElementById('forgotPopup').classList.remove('active')">Cancel</p>
+    </div>
+  </div>
+
+  <!-- DAMAGE REPORT POPUP -->
+  <div class="popup-overlay" id="damagePopup">
+    <div class="popup-box" style="max-width:480px;width:95%;max-height:90vh;overflow-y:auto;padding:24px;border-radius:14px;background:white;box-shadow:0 20px 50px rgba(0,0,0,0.3);position:relative;">
+      <button onclick="closeDamagePopup()" style="position:absolute;top:10px;right:12px;background:none;border:none;font-size:20px;cursor:pointer;color:#666;line-height:1;" title="Close">✕</button>
+      <h3 data-i18n="damageTitle" style="color:#e65100;margin-bottom:4px;">🏚️ Submit Damage Report</h3>
+      <p data-i18n="damageSubtitle" style="color:#666;font-size:13px;margin-bottom:16px;">Report damage after a disaster. Admin will review and respond.</p>
+      <input type="text" id="dmgName" data-i18n-placeholder="damageNamePlaceholder" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;font-size:14px;" />
+      <input type="text" id="dmgAddress" data-i18n-placeholder="damageAddressPlaceholder" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;font-size:14px;" />
+      <select id="dmgType" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;font-size:14px;">
+        <option value="flood" data-i18n="damageTypeFlood">🌊 Flood</option>
+        <option value="cyclone" data-i18n="damageTypeCyclone">🌀 Cyclone</option>
+        <option value="earthquake" data-i18n="damageTypeEarthquake">🌍 Earthquake</option>
+        <option value="fire" data-i18n="damageTypeFire">🔥 Fire</option>
+        <option value="landslide" data-i18n="damageTypeLandslide">⛰️ Landslide</option>
+        <option value="other" data-i18n="damageTypeOther">📍 Other</option>
+      </select>
+      <textarea id="dmgDescription" rows="3" data-i18n-placeholder="damageDescPlaceholder" style="width:100%;padding:10px;margin-bottom:10px;border:1px solid #ccc;border-radius:8px;box-sizing:border-box;font-size:14px;resize:vertical;"></textarea>
+      <label data-i18n="damagePhotoLabel" style="font-size:13px;font-weight:600;color:#374151;display:block;margin-bottom:6px;">📷 Upload Photo of Damage</label>
+      <input type="file" id="dmgPhoto" accept="image/*" style="width:100%;margin-bottom:14px;" onchange="previewDmgPhoto(this)" />
+      <div id="dmgPhotoPreview" style="display:none;margin-bottom:10px;"><img id="dmgPhotoImg" style="width:100%;max-height:160px;object-fit:cover;border-radius:8px;" /></div>
+      <button type="button" onclick="submitDamageReport()" data-i18n="damageSubmitBtn" style="width:100%;padding:12px;background:#e65100;color:white;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">🏚️ Submit Report</button>
+      <p id="dmgResult" style="margin-top:10px;font-weight:bold;text-align:center;font-size:13px;"></p>
+      <p onclick="closeDamagePopup()" data-i18n="cancel" style="text-align:center;color:#999;cursor:pointer;margin-top:8px;font-size:13px;">Cancel</p>
+    </div>
+  </div>
+
+  <!-- TRACK DAMAGE REPORT POPUP -->
+  <div class="popup-overlay" id="trackReportPopup">
+    <div class="popup-box" style="max-width:460px;width:95%;padding:28px;border-radius:14px;">
+      <h3 data-i18n="trackDamageTitle" style="color:#1565c0;margin-bottom:6px;">🔍 Track My Damage Report</h3>
+      <p data-i18n="trackDamageSubtitle" style="color:#666;font-size:13px;margin-bottom:16px;">Enter your Report ID to check status and admin response.</p>
+      <input type="text" id="trackReportId" data-i18n-placeholder="trackDamagePlaceholder"
+        style="width:100%;padding:11px 14px;border:1.5px solid #ccc;border-radius:8px;font-size:14px;box-sizing:border-box;margin-bottom:12px;" />
+      <button type="button" onclick="checkReportStatus()" data-i18n="trackDamageBtn" style="width:100%;padding:12px;background:#1565c0;color:white;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;">🔍 Check Status</button>
+
+      <div id="trackReportResult" style="display:none;margin-top:16px;border-radius:10px;overflow:hidden;border:1.5px solid #e2e8f0;">
+        <div id="trackStatusBadge" style="padding:10px 16px;font-size:13px;font-weight:700;color:white;"></div>
+        <div style="padding:14px 16px;background:#f8fafc;">
+          <p style="margin:0 0 6px;font-size:13px;"><strong data-i18n="trackRptId">Report ID:</strong> <span id="trackRptId"></span></p>
+          <p style="margin:0 0 6px;font-size:13px;"><strong data-i18n="trackRptName">Name:</strong> <span id="trackRptName"></span></p>
+          <p style="margin:0 0 6px;font-size:13px;"><strong data-i18n="trackRptType">Disaster Type:</strong> <span id="trackRptType"></span></p>
+          <p style="margin:0 0 6px;font-size:13px;"><strong data-i18n="trackRptDate">Submitted:</strong> <span id="trackRptDate"></span></p>
+          <div id="trackAdminNote" style="display:none;margin-top:10px;padding:10px 12px;border-radius:8px;border-left:4px solid #16a34a;background:#f0fdf4;">
+            <p data-i18n="adminNote" style="margin:0;font-size:13px;font-weight:700;color:#16a34a;">📝 Admin Note:</p>
+            <p style="margin:4px 0 0;font-size:13px;color:#166534;" id="trackNoteText"></p>
+          </div>
+        </div>
+      </div>
+
+      <p id="trackReportError" style="color:red;font-size:13px;margin-top:10px;text-align:center;display:none;"></p>
+      <p onclick="closeTrackReport()" data-i18n="close" style="text-align:center;color:#999;cursor:pointer;margin-top:14px;font-size:13px;">Close</p>
+    </div>
+  </div>
+
+  <!-- ADMIN NOTE MODAL -->
+  <div class="popup-overlay" id="adminNoteModal" style="display:none;z-index:99999;">
+    <div class="popup-box" style="max-width:420px;width:95%;padding:28px;border-radius:14px;">
+      <h3 id="adminNoteTitle" data-i18n="adminNoteTitle" style="color:#1e293b;margin-bottom:6px;">✅ Resolve Report</h3>
+      <p data-i18n="adminNoteSubtitle" style="color:#666;font-size:13px;margin-bottom:14px;">Write a note for the citizen — they will see this when they track their report.</p>
+      <textarea id="adminNoteInput" rows="4" data-i18n-placeholder="adminNotePlaceholder"
+        style="width:100%;padding:12px;border:1.5px solid #ccc;border-radius:8px;font-size:14px;font-family:inherit;box-sizing:border-box;resize:vertical;"></textarea>
+      <div style="display:flex;gap:10px;margin-top:14px;">
+        <button id="adminNoteConfirm" data-i18n="adminNoteConfirm" style="flex:1;padding:12px;background:#16a34a;color:white;border:none;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;">Confirm</button>
+        <button type="button" onclick="closeAdminNoteModal()" data-i18n="adminNoteCancel" style="flex:1;padding:12px;background:#f1f5f9;color:#374151;border:none;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;">Cancel</button>
+      </div>
+    </div>
+  </div>
+<!-- 👤 EDIT PROFILE MODAL -->
+<div class="popup-overlay" id="profileModal" style="z-index:99999;">
+  <div class="popup-box" style="max-width:440px;width:95%;padding:24px;border-radius:16px;text-align:left;max-height:90vh;overflow-y:auto;">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+      <h3 style="margin:0;color:#1e293b;font-size:18px;">👤 Edit Profile</h3>
+      <button type="button" onclick="closeProfileModal()" style="background:none;border:none;font-size:20px;cursor:pointer;color:#64748b;">✕</button>
+    </div>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div>
+        <label style="font-size:12px;color:#64748b;font-weight:600;">First Name *</label>
+        <input type="text" id="profFirstName" style="margin-bottom:8px;" required />
+      </div>
+      <div>
+        <label style="font-size:12px;color:#64748b;font-weight:600;">Middle Name</label>
+        <input type="text" id="profMiddleName" style="margin-bottom:8px;" />
+      </div>
+    </div>
+
+    <label style="font-size:12px;color:#64748b;font-weight:600;">Last Name *</label>
+    <input type="text" id="profLastName" style="margin-bottom:8px;" required />
+
+    <label style="font-size:12px;color:#64748b;font-weight:600;">Mobile Number (Cannot Change)</label>
+    <input type="text" id="profMobile" style="margin-bottom:8px;background:#f1f5f9;cursor:not-allowed;" readonly />
+
+    <label style="font-size:12px;color:#64748b;font-weight:600;">Email</label>
+    <input type="email" id="profEmail" style="margin-bottom:8px;" />
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+      <div>
+        <label style="font-size:12px;color:#64748b;font-weight:600;">State</label>
+        <input type="text" id="profState" style="margin-bottom:8px;" placeholder="e.g. Odisha" />
+      </div>
+      <div>
+        <label style="font-size:12px;color:#64748b;font-weight:600;">District</label>
+        <input type="text" id="profDistrict" style="margin-bottom:8px;" placeholder="e.g. Khordha" />
+      </div>
+    </div>
+
+    <label style="font-size:12px;color:#64748b;font-weight:600;">New Password (leave blank to keep current)</label>
+    <div class="password-wrapper" style="margin-bottom:16px;">
+      <input type="password" id="profPassword" placeholder="Enter new password" />
+      <span onclick="togglePassword('profPassword', this)">👁</span>
+    </div>
+
+    <div style="display:flex;gap:10px;">
+      <button type="button" onclick="saveProfileChanges()" style="flex:2;padding:12px;background:#16a34a;color:white;border:none;border-radius:10px;font-weight:700;cursor:pointer;">💾 Save Changes</button>
+      <button type="button" onclick="closeProfileModal()" style="flex:1;padding:12px;background:#f1f5f9;color:#64748b;border:none;border-radius:10px;font-weight:600;cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+</div>
+  <!-- CHATBOT -->
+  <div id="chatbotButton" class="hidden">💬<span id="chatbotDot" class="hidden"></span></div>
+  <div id="chatbotBox" class="hidden">
+    <div id="chatbotHeader" data-i18n="chatbotTitle">🤖 Disaster Assistant
+      <button id="soundToggle">🔊</button>
+    </div>
+    <div id="chatbotMessages"></div>
+    <div id="chatbotInputArea">
+      <input type="text" data-i18n-placeholder="chatbotPlaceholder">
+      <button id="chatbotSend" data-i18n="chatbotSend">Send</button>
+    </div>
+  </div>
+ <!-- SOS CONTACT SELECTOR POPUP -->
+  <div id="sosContactPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999999;align-items:center;justify-content:center;padding:16px;">
+    <div style="background:white;border-radius:18px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.4);">
+      <div style="background:linear-gradient(135deg,#dc2626,#b91c1c);padding:18px 20px;border-radius:18px 18px 0 0;">
+        <h3 data-i18n="sosSendTitle" style="color:white;margin:0;font-size:17px;">🆘 Send SOS — Select Contacts</h3>
+        <p data-i18n="sosSubtitle" style="color:rgba(255,255,255,0.8);font-size:12px;margin:4px 0 0;">Choose who to send your emergency alert to</p>
+      </div>
+      <div id="sosGpsStatus" data-i18n="sosGettingGps" style="background:#f0fdf4;border-bottom:1px solid #e2e8f0;padding:10px 16px;font-size:12px;color:#16a34a;font-weight:600;">📡 Getting your location...</div>
+      <div style="padding:12px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:10px;background:#f8fafc;">
+        <input type="checkbox" id="sosSelectAll" onchange="sosToggleAll(this.checked)"
+          style="width:18px;height:18px;cursor:pointer;accent-color:#dc2626;" />
+        <label for="sosSelectAll" data-i18n="sosSelectAll" style="font-weight:700;font-size:14px;color:#1e293b;cursor:pointer;">Select All Contacts</label>
+      </div>
+      <div id="sosContactList" style="padding:8px 16px;"></div>
+      <div style="padding:14px 16px;border-top:1px solid #f1f5f9;display:flex;gap:10px;">
+        <button type="button" onclick="closeSosPopup()"data-i18n="cancel"
+          style="flex:1;padding:12px;background:#f1f5f9;color:#64748b;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin:0;">Cancel</button>
+        <button type="button" onclick="sendSosNow()" data-i18n="sosSendNow"
+          style="flex:2;padding:12px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin:0;">🆘 Send SOS Now</button>
+      </div>
+    </div>
+  </div>
+
+
+<!-- 🏠 RELIEF SHELTERS POPUP -->
+  <div class="popup-overlay" id="shelterPopup">
+    <div class="popup-box" style="max-width:500px; width:95%; max-height:85vh; overflow-y:auto; padding:24px; border-radius:16px; background:white; position:relative;">
+      <button onclick="closeSheltersPopup()" style="position:absolute; top:12px; right:14px; background:none; border:none; font-size:20px; cursor:pointer; color:#64748b;" title="Close">✕</button>
+      <h3 style="color:#0f766e; margin:0 0 4px; font-size:18px;">🏠 Active Relief Shelters & Camps</h3>
+      <p style="color:#64748b; font-size:13px; margin-bottom:16px;">Find safe refuge, free food, water, and first aid near you.</p>
+      
+      <div id="userShelterList" style="display:flex; flex-direction:column; gap:10px; text-align:left;">
+        <p style="color:#64748b; text-align:center; padding:16px;">⏳ Loading nearby shelters...</p>
+      </div>
+    </div>
+  </div>
+
+ <!-- 🟢 CHECK-IN "I AM SAFE" MODAL -->
+  <div class="popup-overlay" id="safeCheckInModal" style="display:none; z-index:99999; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; padding:16px;">
+    <div class="popup-box" style="max-width:420px; width:95%; padding:24px; border-radius:16px; text-align:left; background:white; position:relative;">
+      <button type="button" onclick="closeSafeModal()" style="position:absolute; top:12px; right:14px; background:none; border:none; font-size:20px; cursor:pointer; color:#64748b;">✕</button>
+      <h3 style="color:#16a34a; margin:0 0 4px; font-size:18px;">🟢 Mark Yourself as Safe</h3>
+      <p style="color:#64748b; font-size:13px; margin-bottom:14px;">Let your family, relatives, and rescue teams know you are unhurt.</p>
+
+      <input type="text" id="safeName" placeholder="Your Full Name *" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #cbd5e1; margin-bottom:10px; box-sizing:border-box;">
+      <input type="text" id="safeMobile" placeholder="Your Mobile Number *" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #cbd5e1; margin-bottom:10px; box-sizing:border-box;">
+      <input type="text" id="safeDistrict" placeholder="Current District / City (e.g. Cuttack)" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #cbd5e1; margin-bottom:10px; box-sizing:border-box;">
+      <textarea id="safeNote" rows="2" placeholder="Optional Note: (e.g. Staying at Govt School relief camp with family)" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #cbd5e1; margin-bottom:14px; box-sizing:border-box;"></textarea>
+
+      <button type="button" onclick="submitSafeCheckIn()" style="width:100%; padding:12px; background:linear-gradient(135deg,#16a34a,#15803d); color:white; border:none; border-radius:10px; font-weight:700; font-size:15px; cursor:pointer;">✅ Submit Safety Status</button>
+    </div>
+  </div>
+
+  <!-- 🔍 SEARCH CITIZEN SAFETY REGISTRY MODAL -->
+  <div class="popup-overlay" id="safetySearchModal" style="display:none; z-index:99999; position:fixed; inset:0; background:rgba(0,0,0,0.6); align-items:center; justify-content:center; padding:16px;">
+    <div class="popup-box" style="max-width:500px; width:95%; max-height:85vh; overflow-y:auto; padding:24px; border-radius:16px; text-align:left; background:white; position:relative;">
+      <button type="button" onclick="closeSafetySearchModal()" style="position:absolute; top:12px; right:14px; background:none; border:none; font-size:20px; cursor:pointer; color:#64748b;">✕</button>
+      <h3 style="color:#0f766e; margin:0 0 4px; font-size:18px;">🔍 Citizen Safety Registry</h3>
+      <p style="color:#64748b; font-size:13px; margin-bottom:14px;">Search for checked-in family members or friends in affected areas.</p>
+
+      <div style="display:flex; gap:8px; margin-bottom:14px;">
+        <input type="text" id="safetySearchQuery" placeholder="Search by Name, Phone, or City..." style="flex:1; padding:10px 12px; border-radius:8px; border:1.5px solid #cbd5e1; font-size:14px;" onkeypress="if(event.key==='Enter') searchSafetyRegistry()">
+        <button type="button" onclick="searchSafetyRegistry()" style="padding:10px 16px; background:#0f766e; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer;">Search</button>
+      </div>
+
+      <div id="safetySearchResults" style="display:flex; flex-direction:column; gap:8px;"></div>
+    </div>
+  </div>
+
+  
+<div id="installBanner" class="install-banner-fixed hidden">
+  <span>📲 Install this app for better experience</span>
+
+  <div class="banner-actions">
+  <button type="button" id="installBtn">Install</button>
+   <button type="button" id="closeBanner" aria-label="Close banner">✖</button>
+  </div>
+</div>
+<!-- <script src="https://cdn.jsdelivr.net/npm/eruda"></script>
+<script>eruda.init();</script> -->
+
+<script src="theme.js"></script>
+<script src="script.js"></script>
+<script src="i18n.js"></script>
+</body>
+</html>

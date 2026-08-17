@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="ngoPortalTitle">NGO &amp; Volunteer Portal</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🤝</text></svg>" />
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap');
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { overflow-x: hidden; }
+    body { font-family: "Poppins", Arial, sans-serif; background: linear-gradient(135deg, #0f172a 0%, #1e3a8a 50%, #0891b2 100%); background-attachment: fixed; min-height: 100vh; color: #1e293b; }
+    .ngo-header { background: rgba(15,23,42,0.95); backdrop-filter: blur(10px); padding: 14px 20px; display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(0,0,0,0.4); }
+    .ngo-header h1 { color: white; font-size: 17px; font-weight: 700; }
+    .ngo-header a { color: #93c5fd; text-decoration: none; font-size: 13px; font-weight: 600; }
+    .ngo-header a:hover { color: white; }
+    .page-wrap { max-width: 520px; margin: 0 auto; padding: 24px 16px 100px; }
+    .hero { text-align: center; padding: 32px 0 24px; }
+    .hero .hero-icon { font-size: 56px; margin-bottom: 12px; animation: floatIcon 3s ease-in-out infinite; }
+    @keyframes floatIcon { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
+    .hero h2 { font-size: 22px; font-weight: 700; color: white; margin-bottom: 8px; text-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+    .hero p { font-size: 14px; color: rgba(255,255,255,0.75); line-height: 1.6; }
+    .role-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 14px; }
+    .role-card { background: white; border-radius: 16px; padding: 20px 14px; text-align: center; cursor: pointer; border: 2px solid transparent; transition: all 0.25s ease; box-shadow: 0 4px 20px rgba(0,0,0,0.15); }
+    .role-card:hover { transform: translateY(-4px); box-shadow: 0 12px 32px rgba(0,0,0,0.25); }
+    .role-card.login-card:hover { border-color: #2563eb; }
+    .role-card.reg-card:hover   { border-color: #16a34a; }
+    .role-card.status-card { grid-column: 1 / -1; background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.25); }
+    .role-card.status-card:hover { background: rgba(255,255,255,0.2); border-color: rgba(255,255,255,0.5); }
+    .role-card .card-icon { font-size: 28px; margin-bottom: 8px; }
+    .role-card .card-label { font-size: 13px; font-weight: 700; color: #1e293b; }
+    .role-card.status-card .card-label { color: white; }
+    .role-card .card-sub { font-size: 11px; color: #64748b; margin-top: 4px; }
+    .role-card.status-card .card-sub { color: rgba(255,255,255,0.7); }
+    .panel { background: white; border-radius: 20px; padding: 28px 24px; box-shadow: 0 16px 48px rgba(0,0,0,0.2); }
+    .panel-header { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 1.5px solid #f1f5f9; }
+    .panel-header .panel-icon { font-size: 24px; }
+    .panel-header h2 { font-size: 18px; font-weight: 700; color: #1e293b; flex: 1; }
+    .back-btn { background: none; border: 1.5px solid #e2e8f0; color: #64748b; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+    .back-btn:hover { background: #f8fafc; color: #1e293b; border-color: #cbd5e1; }
+    .field-group { margin-bottom: 14px; }
+    .field-label { display: block; font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 5px; }
+    .field-input { width: 100%; padding: 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; font-family: inherit; color: #1e293b; background: white; transition: border-color 0.2s, box-shadow 0.2s; outline: none; }
+    .field-input:focus { border-color: #2563eb; box-shadow: 0 0 0 3px rgba(37,99,235,0.1); }
+    textarea.field-input { resize: vertical; min-height: 70px; }
+    select.field-input { cursor: pointer; }
+    .pw-wrap { position: relative; }
+    .pw-wrap .field-input { padding-right: 40px; }
+    .pw-eye { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; user-select: none; color: #94a3b8; }
+    .field-hint { font-size: 11px; color: #ef4444; margin-top: 4px; }
+    .section-divider { display: flex; align-items: center; gap: 10px; margin: 18px 0 14px; }
+    .section-divider .divider-line { flex: 1; height: 1px; background: #e2e8f0; }
+    .section-divider span { font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; }
+    #volNameFields .field-input { margin-bottom: 8px; }
+    .btn-primary { width: 100%; padding: 13px; background: linear-gradient(135deg, #2563eb, #1d4ed8); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.3s; margin-top: 6px; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(37,99,235,0.35); }
+    .btn-primary.green { background: linear-gradient(135deg, #16a34a, #15803d); }
+    .btn-primary.green:hover { box-shadow: 0 8px 20px rgba(22,163,74,0.35); }
+    .btn-primary.purple { background: linear-gradient(135deg, #7c3aed, #6d28d9); }
+    .btn-primary.purple:hover { box-shadow: 0 8px 20px rgba(124,58,237,0.35); }
+    .btn-secondary { width: 100%; padding: 11px; background: #f1f5f9; color: #64748b; border: none; border-radius: 10px; font-size: 14px; font-weight: 600; cursor: pointer; font-family: inherit; margin-top: 8px; transition: background 0.2s; }
+    .btn-secondary:hover { background: #e2e8f0; color: #1e293b; }
+    .forgot-link { display: block; text-align: center; margin-top: 12px; font-size: 13px; color: #2563eb; cursor: pointer; text-decoration: none; font-weight: 600; }
+    .forgot-link:hover { text-decoration: underline; }
+    .dash-welcome-box { background: linear-gradient(135deg, #1e3a8a, #2563eb); border-radius: 16px; padding: 20px; margin-bottom: 16px; color: white; }
+    .dash-welcome-box .dw-label { font-size: 12px; opacity: 0.75; margin-bottom: 4px; }
+    .dash-welcome-box .dw-name { font-size: 20px; font-weight: 700; }
+    .dash-welcome-box .dw-badge { display: inline-block; background: rgba(255,255,255,0.2); padding: 3px 10px; border-radius: 20px; font-size: 11px; margin-top: 8px; }
+    .dash-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+    .dash-action-btn { background: white; border: 1.5px solid #e2e8f0; border-radius: 14px; padding: 16px 12px; text-align: center; cursor: pointer; font-family: inherit; transition: all 0.2s; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .dash-action-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.12); border-color: #2563eb; }
+    .dash-action-btn .da-icon { font-size: 24px; margin-bottom: 6px; }
+    .dash-action-btn .da-label { font-size: 12px; font-weight: 700; color: #1e293b; }
+    .dash-action-btn.logout-btn { border-color: #fecaca; background: #fef2f2; }
+    .dash-action-btn.logout-btn .da-label { color: #dc2626; }
+    .dash-action-btn.logout-btn:hover { border-color: #dc2626; }
+    #ordersList { margin-top: 4px; }
+    .order-card { background: white; border-radius: 14px; border: 1.5px solid #e2e8f0; border-left: 4px solid #2563eb; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+    .order-card.completed { border-left-color: #16a34a; background: #f0fdf4; }
+    .order-card .order-field { display: flex; gap: 6px; font-size: 13px; margin-bottom: 4px; color: #374151; }
+    .order-card .order-field strong { color: #1e293b; min-width: 72px; }
+    .order-card .status-pill { display: inline-block; padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .status-pending   { background: #fef3c7; color: #92400e; }
+    .status-completed { background: #d1fae5; color: #065f46; }
+    .btn-complete { margin-top: 12px; width: 100%; padding: 10px; background: linear-gradient(135deg, #16a34a, #15803d); color: white; border: none; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; font-family: inherit; transition: all 0.2s; }
+    .btn-complete:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(22,163,74,0.35); }
+    .status-result-card { background: #f0fdf4; border: 1.5px solid #86efac; border-radius: 12px; padding: 14px 16px; margin-top: 12px; font-size: 14px; color: #14532d; line-height: 1.7; }
+    .status-result-card.pending  { background: #fef9c3; border-color: #fde047; color: #713f12; }
+    .status-result-card.rejected { background: #fef2f2; border-color: #fca5a5; color: #7f1d1d; }
+    #workModal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 9999; align-items: center; justify-content: center; padding: 16px; }
+    #workModal.show { display: flex; }
+    .work-modal-box { background: white; border-radius: 18px; padding: 24px; width: 100%; max-width: 400px; box-shadow: 0 24px 60px rgba(0,0,0,0.4); }
+    .work-modal-box h3 { font-size: 16px; font-weight: 700; color: #1e293b; margin-bottom: 16px; }
+    .work-modal-box textarea, .work-modal-box input[type="file"] { width: 100%; margin-bottom: 12px; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; font-family: inherit; }
+    .work-modal-box textarea:focus { outline: none; border-color: #2563eb; }
+    .work-modal-actions { display: flex; gap: 10px; margin-top: 4px; }
+    .work-modal-actions button { flex: 1; }
+    #ngoToast { position: fixed; bottom: 90px; left: 50%; transform: translateX(-50%); background: #16a34a; color: white; padding: 12px 24px; border-radius: 12px; font-size: 14px; font-weight: 700; z-index: 99999; box-shadow: 0 8px 24px rgba(0,0,0,0.25); display: none; text-align: center; max-width: 90vw; }
+    .hidden { display: none !important; }
+    @media (max-width: 400px) { .role-cards { grid-template-columns: 1fr; } .role-card.status-card { grid-column: auto; } .dash-actions { grid-template-columns: 1fr; } .panel { padding: 20px 16px; } .hero h2 { font-size: 18px; } }
+    @media (min-width: 600px) { .page-wrap { padding: 28px 24px 100px; } }
+  </style>
+</head>
+<body>
+
+<header class="ngo-header">
+  <h1 data-i18n="ngoPortalTitle">🤝 NGO &amp; Volunteer Portal</h1>
+  <a href="index.html" data-i18n="backToDashboard">← Back to Dashboard</a>
+</header>
+
+<div class="page-wrap">
+
+  <!-- LANDING -->
+  <div id="roleSelect">
+    <div class="hero">
+      <div class="hero-icon">🤝</div>
+      <h2 data-i18n="ngoPortalTitle">NGO &amp; Volunteer Portal</h2>
+      <p data-i18n="ngoPortalSubtitle">Connecting NGOs with disaster relief operations</p>
+    </div>
+    <div class="role-cards">
+      <div class="role-card login-card" onclick="showLogin()">
+        <div class="card-icon">🔐</div>
+        <div class="card-label" data-i18n="ngoLoginBtn">Login</div>
+        <div class="card-sub" data-i18n="ngoLoginTitle">NGO / Volunteer Login</div>
+      </div>
+      <div class="role-card reg-card" onclick="showRegister()">
+        <div class="card-icon">📝</div>
+        <div class="card-label" data-i18n="ngoRegisterBtn">Register</div>
+        <div class="card-sub" data-i18n="ngoRegTitle">Register your NGO</div>
+      </div>
+      <div class="role-card status-card" onclick="showStatus()">
+        <div class="card-icon">🔍</div>
+        <div class="card-label" data-i18n="ngoCheckStatusBtn">Check Status</div>
+        <div class="card-sub" data-i18n="ngoStatusTitle">Check NGO approval status</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGISTER -->
+  <div class="panel hidden" id="registerBox">
+    <div class="panel-header">
+      <span class="panel-icon">📝</span>
+      <h2 data-i18n="ngoRegTitle">Register NGO / Volunteer</h2>
+      <button class="back-btn" onclick="backToMain()" data-i18n="ngoBackBtn">← Back</button>
+    </div>
+    <div class="section-divider"><div class="divider-line"></div><span>Basic Info</span><div class="divider-line"></div></div>
+    <div class="field-group">
+      <input class="field-input" type="text" id="ngoName" data-i18n-placeholder="ngoNamePlaceholder">
+    </div>
+    <div class="field-group">
+      <select class="field-input" id="ngoType" required>
+        <option value="" data-i18n="ngoTypeSelect">Select NGO Type *</option>
+        <option value="Medical"   data-i18n="ngoTypeMedical">🏥 Medical / Health</option>
+        <option value="Rescue"    data-i18n="ngoTypeRescue">🚒 Rescue &amp; Relief</option>
+        <option value="Food"      data-i18n="ngoTypeFood">🍱 Food &amp; Nutrition</option>
+        <option value="Shelter"   data-i18n="ngoTypeShelter">🏠 Shelter</option>
+        <option value="Education" data-i18n="ngoTypeEducation">📚 Education</option>
+        <option value="General"   data-i18n="ngoTypeGeneral">🤝 General Welfare</option>
+      </select>
+    </div>
+    <div class="field-group">
+      <label class="field-label" data-i18n="ngoVolunteersLabel">Volunteers *</label>
+      <select class="field-input" id="memberCount" onchange="buildVolFields()" required>
+        <option value="" data-i18n="ngoVolunteersSelect">How many volunteers?</option>
+        <option value="1">1</option><option value="2">2</option><option value="3">3</option>
+        <option value="4">4</option><option value="5">5</option><option value="6">6</option>
+        <option value="7">7</option><option value="8">8</option><option value="9">9</option><option value="10">10</option>
+      </select>
+      <div id="volNameFields" style="margin-top:8px;"></div>
+    </div>
+    <div class="section-divider"><div class="divider-line"></div><span data-i18n="ngoStateLabel">Location</span><div class="divider-line"></div></div>
+    <div class="field-group">
+      <label class="field-label" data-i18n="ngoStateLabel">State *</label>
+      <select class="field-input" id="state" required><option value="" data-i18n="ngoStateSelect">Select State</option></select>
+    </div>
+    <div class="field-group">
+      <label class="field-label" data-i18n="ngoDistrictLabel">District *</label>
+      <select class="field-input" id="district" required><option value="" data-i18n="ngoDistrictSelect">Select District</option></select>
+    </div>
+    <div class="field-group"><input class="field-input" type="text" id="landmark1" data-i18n-placeholder="ngoLandmark1" required></div>
+    <div class="field-group"><input class="field-input" type="text" id="landmark2" data-i18n-placeholder="ngoLandmark2"></div>
+    <div class="field-group"><textarea class="field-input" id="fullAddress" rows="2" data-i18n-placeholder="ngoAddress" required></textarea></div>
+    <div class="section-divider"><div class="divider-line"></div><span>Contact &amp; Auth</span><div class="divider-line"></div></div>
+    <div class="field-group">
+      <input class="field-input" type="text" id="regMobile" data-i18n-placeholder="ngoMobilePlaceholder" maxlength="10" inputmode="numeric" pattern="[0-9]{10}" required oninput="this.value = this.value.replace(/[^0-9]/g, '')">
+    </div>
+    <div class="field-group"><input class="field-input" type="email" id="email" data-i18n-placeholder="ngoEmailPlaceholder"></div>
+    <div class="field-group"><input class="field-input" type="text" id="headName" data-i18n-placeholder="ngoHeadPlaceholder" required></div>
+    <div class="field-group">
+      <div class="pw-wrap">
+        <input class="field-input" type="password" id="pass" data-i18n-placeholder="ngoPassPlaceholder" required>
+        <span class="pw-eye" onclick="togglePw('pass',this)">👁</span>
+      </div>
+      <p class="field-hint" data-i18n="ngoPassHint">Min 8 chars</p>
+    </div>
+    <div class="field-group"><input class="field-input" type="password" id="cpass" data-i18n-placeholder="ngoCpassPlaceholder" required></div>
+    <button class="btn-primary green" onclick="registerNgo()" data-i18n="ngoRegBtn">✅ Register NGO</button>
+    <button class="btn-secondary" onclick="backToMain()" data-i18n="ngoBackBtn">← Back</button>
+  </div>
+
+  <!-- LOGIN -->
+  <div class="panel hidden" id="loginBox">
+    <div class="panel-header">
+      <span class="panel-icon">🔐</span>
+      <h2 data-i18n="ngoLoginTitle">NGO / Volunteer Login</h2>
+      <button class="back-btn" onclick="backToMain()" data-i18n="ngoBackBtn">← Back</button>
+    </div>
+    <div class="field-group">
+      <label class="field-label">NGO ID</label>
+      <input class="field-input" type="text" id="loginNgoName" data-i18n-placeholder="ngoIdPlaceholder">
+    </div>
+    <div class="field-group">
+      <label class="field-label" data-i18n="ngoLoginPassPlaceholder">Password</label>
+      <div class="pw-wrap">
+        <input class="field-input" type="password" id="loginPass" data-i18n-placeholder="ngoLoginPassPlaceholder">
+        <span class="pw-eye" onclick="togglePw('loginPass',this)">👁</span>
+      </div>
+    </div>
+    <button class="btn-primary purple" onclick="loginNgo()" data-i18n="ngoLoginSubmitBtn">🔐 Login</button>
+    <a class="forgot-link" onclick="openNgoForgot()" data-i18n="ngoForgotLink">Forgot Password?</a>
+    <button class="btn-secondary" onclick="backToMain()" data-i18n="ngoBackBtn">← Back</button>
+  </div>
+
+  <!-- FORGOT PASSWORD -->
+  <div class="panel hidden" id="ngoForgotBox">
+    <div class="panel-header">
+      <span class="panel-icon">🔐</span>
+      <h2 data-i18n="ngoForgotTitle">NGO Reset Password</h2>
+      <button class="back-btn" onclick="backToMain()" data-i18n="ngoBackBtn">← Back</button>
+    </div>
+    <div class="field-group"><input class="field-input" type="text" id="ngoFpId" data-i18n-placeholder="ngoForgotIdPlaceholder"></div>
+    <button class="btn-primary" onclick="ngoRequestOTP()" data-i18n="ngoSendOtpBtn">Send OTP</button>
+    <div style="margin-top:12px;">
+      <div class="field-group"><input class="field-input" type="text" id="ngoFpOtp" data-i18n-placeholder="forgotOtpPlaceholder"></div>
+      <div class="field-group"><input class="field-input" type="password" id="ngoNewPass" data-i18n-placeholder="ngoNewPassPlaceholder"></div>
+      <button class="btn-primary green" onclick="ngoResetPassword()" data-i18n="ngoResetBtn">Reset Password</button>
+    </div>
+    <button class="btn-secondary" onclick="backToMain()" data-i18n="ngoBackBtn">← Back</button>
+  </div>
+
+  <!-- STATUS CHECK -->
+  <div class="panel hidden" id="statusBox">
+    <div class="panel-header">
+      <span class="panel-icon">🔍</span>
+      <h2 data-i18n="ngoStatusTitle">Check NGO Status</h2>
+      <button class="back-btn" onclick="backToMain()" data-i18n="ngoBackBtn">← Back</button>
+    </div>
+    <div class="field-group"><input class="field-input" type="text" id="statusNgoId" data-i18n-placeholder="ngoStatusIdPlaceholder"></div>
+    <button class="btn-primary" onclick="checkStatus()" data-i18n="ngoStatusCheckBtn">Check Status</button>
+    <div id="statusResult" style="margin-top:12px;"></div>
+    <button class="btn-secondary" onclick="backToMain()" data-i18n="ngoBackBtn">← Back</button>
+  </div>
+
+  <!-- DASHBOARD -->
+  <div id="ngoDashboard" class="hidden">
+    <!-- 📢 LIVE EMERGENCY BROADCAST BANNER -->
+    <div id="ngoBroadcastBanner" style="display:none; margin-bottom:16px; padding:12px 16px; border-radius:12px; font-weight:700; font-size:13px; text-align:left; box-shadow:0 4px 12px rgba(0,0,0,0.15);"></div>
+    <div class="dash-welcome-box">
+      <div class="dw-label" data-i18n="ngoDashWelcome">Welcome,</div>
+      <div class="dw-name" id="ngoUser">—</div>
+      <div class="dw-badge" data-i18n="ngoPortalTitle">NGO Partner</div>
+    </div>
+    <div class="dash-actions">
+      <div class="dash-action-btn" onclick="showOrders()">
+        <div class="da-icon">📦</div>
+        <div class="da-label" data-i18n="ngoOrdersBtn">Orders from Admin</div>
+      </div>
+      <div class="dash-action-btn logout-btn" onclick="logoutNgo()">
+        <div class="da-icon">⎋</div>
+        <div class="da-label" data-i18n="ngoLogoutBtn">Logout</div>
+      </div>
+    </div>
+    <div id="ordersList"></div>
+  </div>
+
+</div>
+
+<!-- Work Modal -->
+<div id="workModal">
+  <div class="work-modal-box">
+    <h3 data-i18n="ngoWorkTitle">Update Work</h3>
+    <textarea id="workNoteInput" rows="3" data-i18n-placeholder="ngoWorkNotePlaceholder"></textarea>
+    <input type="file" id="workPhoto" accept="image/*">
+    <div class="work-modal-actions">
+      <button class="btn-primary green" onclick="submitWorkUpdate()" data-i18n="ngoWorkSubmitBtn">Submit</button>
+      <button class="btn-secondary" onclick="closeWorkModal()" data-i18n="ngoWorkCancelBtn">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<div id="ngoToast"></div>
+
+<script src="i18n.js"></script>
+<script>
+// API_KEY removed — state/district dropdowns now use /api/states and /api/districts on your backend
+
+function showToast(msg, color) {
+  const el = document.getElementById("ngoToast");
+  el.textContent = msg;
+  el.style.background = color || "#16a34a";
+  el.style.display = "block";
+  setTimeout(() => { el.style.display = "none"; }, 3000);
+}
+function togglePw(id, icon) {
+  const f = document.getElementById(id);
+  if (f.type === "password") { f.type = "text"; icon.textContent = "🙈"; }
+  else { f.type = "password"; icon.textContent = "👁"; }
+}
+function showPanel(id) {
+  ["roleSelect","registerBox","loginBox","ngoForgotBox","statusBox","ngoDashboard"]
+    .forEach(p => document.getElementById(p)?.classList.add("hidden"));
+  document.getElementById(id)?.classList.remove("hidden");
+}
+function showRegister() { showPanel("registerBox"); }
+function showLogin()    { showPanel("loginBox"); }
+function showStatus()   { showPanel("statusBox"); }
+function backToMain()   { showPanel("roleSelect"); }
+
+const stateSelect    = document.getElementById("state");
+const districtSelect = document.getElementById("district");
+
+async function loadStates() {
+  try {
+    const res    = await fetch("https://alertifyy.onrender.com/api/states");
+    const states = await res.json();
+    states.forEach(s => {
+      const opt = document.createElement("option");
+      opt.value = s.name; opt.textContent = s.name;
+      stateSelect.appendChild(opt);
+    });
+  } catch(e) {}
+}
+stateSelect.addEventListener("change", async function() {
+  districtSelect.innerHTML = '<option value="">' + t("ngoDistrictSelect") + '</option>';
+  if (!this.value) return;
+  try {
+    const res = await fetch("https://alertifyy.onrender.com/api/districts?state=" + this.value);
+    const districts = await res.json();
+    districts.forEach(d => {
+      const opt = document.createElement("option");
+      opt.value = opt.textContent = d.name;
+      districtSelect.appendChild(opt);
+    });
+  } catch(e) {}
+});
+loadStates();
+
+function buildVolFields() {
+  const count = parseInt(document.getElementById("memberCount").value) || 0;
+  const container = document.getElementById("volNameFields");
+  container.innerHTML = "";
+  for (let i = 1; i <= count; i++) {
+    const inp = document.createElement("input");
+    inp.type = "text"; inp.id = "volName_" + i;
+    inp.className = "field-input";
+    inp.placeholder = t("ngoVolPlaceholder").replace("{n}", i);
+    inp.required = true; inp.style.marginBottom = "8px";
+    container.appendChild(inp);
+  }
+}
+document.addEventListener("langChanged", buildVolFields);
+
+async function registerNgo() {
+  const password = document.getElementById("pass").value.trim();
+  const cpassVal = document.getElementById("cpass").value.trim();
+  const pwRegex  = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+  if (!pwRegex.test(password)) { showToast(t("ngoPassHint"), "#dc2626"); return; }
+  if (password !== cpassVal)   { showToast(t("userRegErrMatch"), "#dc2626"); return; }
+  const count = parseInt(document.getElementById("memberCount")?.value) || 0;
+  const volNames = []; const volunteers = [];
+  for (let i = 1; i <= count; i++) {
+    const n = document.getElementById("volName_" + i)?.value.trim();
+    if (n) { volNames.push(n); volunteers.push({ name: n }); }
+  }
+  const ngoData = {
+    ngoName: document.getElementById("ngoName").value.trim(),
+    ngoType: document.getElementById("ngoType").value || "General",
+    volName: volNames.join(", ") || "—", volunteers,
+    state:   stateSelect.options[stateSelect.selectedIndex].text,
+    district: districtSelect.value.trim(),
+    landmark1: document.getElementById("landmark1").value.trim(),
+    landmark2: document.getElementById("landmark2").value.trim(),
+    fullAddress: document.getElementById("fullAddress").value.trim(),
+    mobile:  document.getElementById("regMobile").value.trim(),
+    email:   document.getElementById("email").value.trim(),
+    headName: document.getElementById("headName").value.trim(),
+    password
+  };
+  try {
+   const res  = await fetch("https://alertifyy.onrender.com/api/ngo/register", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(ngoData) });
+    const data = await res.json();
+    if (!res.ok) { alert(data.message + "\n\nYour NGO ID is: " + data.ngoId); return; }
+    alert(data.message + "\n\nYour NGO ID is: " + data.ngoId + "\n\nSave this ID!");
+    backToMain();
+  } catch(e) { showToast(t("ngoErrConnectServer"), "#dc2626"); }
+}
+
+async function loginNgo() {
+  const ngoId    = document.getElementById("loginNgoName").value.trim();
+  const password = document.getElementById("loginPass").value.trim();
+  try {
+   const res  = await fetch("https://alertifyy.onrender.com/api/ngo/login", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ngoId, password }) });
+    const data = await res.json();
+    if (!res.ok) { showToast(data.message, "#dc2626"); return; }
+    showToast(t("ngoLoginSuccess"));
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("loggedNgoId", data.ngo.ngoId);
+    showPanel("ngoDashboard");
+    document.getElementById("ngoUser").textContent = data.ngo.ngoName;
+    loadNgoBroadcasts();
+  } catch(e) { showToast(t("ngoErrServer"), "#dc2626"); }
+}
+
+async function checkStatus() {
+  const ngoId = document.getElementById("statusNgoId").value.trim();
+  if (!ngoId) { showToast(t("ngoErrEnterNgoId"), "#dc2626"); return; }
+  const resultEl = document.getElementById("statusResult");
+  resultEl.innerHTML = "";
+  try {
+    const res  = await fetch("https://alertifyy.onrender.com/api/ngo/status/" + ngoId);
+    const data = await res.json();
+    if (!res.ok) { resultEl.innerHTML = '<div class="status-result-card rejected">❌ ' + data.message + '</div>'; return; }
+    const colorClass = data.status === "Approved" ? "" : data.status === "Pending" ? "pending" : "rejected";
+    const icon = data.status === "Approved" ? "✅" : data.status === "Pending" ? "⏳" : "❌";
+    resultEl.innerHTML = '<div class="status-result-card ' + colorClass + '"><strong>' + t("ngoStatusResult") + '</strong> ' + data.ngoName + '<br><strong>' + t("ngoStatusStatus") + '</strong> ' + icon + ' ' + data.status + '</div>';
+  } catch(e) { showToast(t("ngoErrServer"), "#dc2626"); }
+}
+
+async function showOrders() {
+  const ngoId = localStorage.getItem("loggedNgoId");
+  const token = localStorage.getItem("token");
+  if (!token || !ngoId) { showToast(t("ngoErrServer"), "#dc2626"); backToMain(); return; }
+  const container = document.getElementById("ordersList");
+  container.innerHTML = '<div style="text-align:center;padding:20px;color:#94a3b8;">' + t("loading") + '</div>';
+  try {
+    const res    = await fetch("https://alertifyy.onrender.com/api/ngo/orders/" + ngoId, { headers: { "Authorization": "Bearer " + token } });
+    const orders = await res.json();
+    container.innerHTML = "";
+    if (!orders.length) {
+      container.innerHTML = '<div class="panel" style="text-align:center;color:#94a3b8;padding:28px;">📭 ' + t("ngoNoOrders") + '</div>';
+      return;
+    }
+    orders.forEach(order => {
+      const isComplete = order.status === "Completed";
+      const isRescue = order.note && order.note.includes("EMERGENCY RESCUE");
+
+      // 1. Extract Google Maps URL if present in note
+      const mapMatch = order.note ? order.note.match(/https:\/\/www\.google\.com\/maps\?q=[^\s]+/) : null;
+      const mapUrl = mapMatch ? mapMatch[0] : (order.location.includes(",") ? `https://www.google.com/maps?q=${encodeURIComponent(order.location)}` : null);
+
+      // 2. Pre-fill WhatsApp Rescue Mission Message
+      const waText = encodeURIComponent(
+        `🚨 *ALERTIFY EMERGENCY RESCUE MISSION*\n\n` +
+        `📍 *Location:* ${order.location}\n` +
+        `📝 *Order Note:* ${order.note}\n` +
+        (mapUrl ? `🗺️ *GPS Navigation:* ${mapUrl}\n\n` : `\n`) +
+        `⚠️ *Action Required:* Proceed immediately with rescue equipment.`
+      );
+      const waLink = `https://api.whatsapp.com/send?text=${waText}`;
+
+      const card = document.createElement("div");
+      card.className = "order-card panel" + (isComplete ? " completed" : "");
+      if (isRescue && !isComplete) {
+        card.style.borderLeft = "5px solid #dc2626";
+        card.style.background = "#fff5f5";
+      }
+
+      card.innerHTML =
+        (isRescue && !isComplete ? '<div style="background:#fee2e2; color:#dc2626; padding:3px 10px; border-radius:8px; font-weight:800; font-size:11px; display:inline-block; margin-bottom:8px;">🚨 HIGH PRIORITY RESCUE DISPATCH</div>' : '') +
+        '<div class="order-field"><strong>' + t("ngoOrderLocation") + '</strong> ' + order.location + '</div>' +
+        '<div class="order-field"><strong>' + t("ngoOrderNote") + '</strong> ' + order.note + '</div>' +
+        
+        // 🗺️ Navigation & 📲 WhatsApp Share Buttons
+        '<div style="display:flex; flex-wrap:wrap; gap:8px; margin: 10px 0;">' +
+          (mapUrl ? `<a href="${mapUrl}" target="_blank" style="display:inline-flex; align-items:center; gap:5px; background:#2563eb; color:white; padding:7px 12px; border-radius:8px; text-decoration:none; font-size:12px; font-weight:700;">📍 Navigate (GPS) →</a>` : '') +
+          `<a href="${waLink}" target="_blank" style="display:inline-flex; align-items:center; gap:5px; background:#16a34a; color:white; padding:7px 12px; border-radius:8px; text-decoration:none; font-size:12px; font-weight:700;">📲 Forward to Team (WhatsApp)</a>` +
+        '</div>' +
+
+        '<div class="order-field"><strong>' + t("ngoOrderStatus") + '</strong> <span class="status-pill ' + (isComplete ? "status-completed" : "status-pending") + '">' + order.status + '</span></div>' +
+        (order.workNote ? '<div class="order-field"><strong>' + t("ngoOrderWorkNote") + '</strong> ' + order.workNote + '</div>' : '') +
+        (!isComplete
+          ? '<button class="btn-complete" onclick="markCompleted(\'' + order._id + '\')">' + t("ngoMarkCompleted") + '</button>'
+          : '<p style="margin-top:10px;font-size:13px;color:#16a34a;font-weight:700;">✅ ' + t("ngoCompleted") + '</p>');
+      container.appendChild(card);
+    });
+  } catch(e) {
+    container.innerHTML = '<div class="panel" style="color:#dc2626;text-align:center;padding:20px;">❌ ' + t("ngoErrServer") + '</div>';
+  }
+}
+
+let currentOrderId = null;
+function markCompleted(id) { currentOrderId = id; document.getElementById("workModal").classList.add("show"); }
+function closeWorkModal()   { document.getElementById("workModal").classList.remove("show"); currentOrderId = null; }
+
+async function submitWorkUpdate() {
+  if (!currentOrderId) return;
+  const workNote = document.getElementById("workNoteInput").value.trim();
+  const photo    = document.getElementById("workPhoto").files[0];
+  if (!workNote) { showToast("❌ " + t("ngoWorkNotePlaceholder"), "#dc2626"); return; }
+  if (!photo)    { showToast("❌ " + t("ngoWorkPhotoLabel"), "#dc2626"); return; }
+  const formData = new FormData();
+  formData.append("status", "Completed");
+  formData.append("workNote", workNote);
+  formData.append("photo", photo);
+  try {
+    const token = localStorage.getItem("token");
+    const res   = await fetch("https://alertifyy.onrender.com/api/ngo/update-order/" + currentOrderId, { method: "PUT", headers: { "Authorization": "Bearer " + token }, body: formData });
+    const data  = await res.json();
+    if (!res.ok) { showToast(data.message || "Update failed", "#dc2626"); return; }
+    closeWorkModal();
+    showToast(t("ngoWorkSuccess"));
+    document.getElementById("workNoteInput").value = "";
+    showOrders();
+  } catch(e) { showToast(t("ngoErrServer"), "#dc2626"); }
+}
+
+function logoutNgo() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("loggedNgoId");
+  showToast(t("ngoLogoutSuccess"));
+  setTimeout(() => { window.location.href = "index.html"; }, 1200);
+}
+
+function openNgoForgot() { showPanel("ngoForgotBox"); }
+async function ngoRequestOTP() {
+  const ngoId = document.getElementById("ngoFpId").value.trim();
+  if (!ngoId) { showToast(t("ngoErrEnterNgoId"), "#dc2626"); return; }
+  const res  = await fetch("https://alertifyy.onrender.com/api/ngo/request-otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ngoId }) });
+  const data = await res.json();
+  showToast(data.message || t("ngoSendOtpBtn"));
+}
+async function ngoResetPassword() {
+  const ngoId       = document.getElementById("ngoFpId").value.trim();
+  const otp         = document.getElementById("ngoFpOtp").value.trim();
+  const newPassword = document.getElementById("ngoNewPass").value.trim();
+  if (!otp || !newPassword) { showToast(t("ngoErrOtpNewPass"), "#dc2626"); return; }
+  const verify = await fetch("https://alertifyy.onrender.com/api/ngo/verify-otp", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ngoId, otp }) });
+  if (!verify.ok) { showToast(t("ngoErrInvalidOtp"), "#dc2626"); return; }
+  const reset  = await fetch("https://alertifyy.onrender.com/api/ngo/reset-password", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ngoId, newPassword }) });
+  const result = await reset.json();
+  showToast(result.message);
+  backToMain();
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  const savedNgoId = localStorage.getItem("loggedNgoId");
+  const savedToken = localStorage.getItem("token");
+  if (savedNgoId && savedToken) {
+    showPanel("ngoDashboard");
+    document.getElementById("ngoUser").textContent = savedNgoId;
+    loadNgoBroadcasts();
+  showOrders();
+  }
+});
+
+
+
+// Load emergency broadcasts for logged-in NGO
+async function loadNgoBroadcasts() {
+  const banner = document.getElementById("ngoBroadcastBanner");
+  if (!banner) return;
+
+  try {
+    const res = await fetch("https://alertifyy.onrender.com/api/broadcasts");
+    const broadcasts = await res.json();
+
+    if (Array.isArray(broadcasts) && broadcasts.length > 0) {
+      const topAlert = broadcasts[0];
+      const isCritical = topAlert.severity === "Critical";
+
+      banner.style.display = "block";
+      banner.style.background = isCritical ? "#fef2f2" : "#fff7ed";
+      banner.style.color = isCritical ? "#991b1b" : "#c2410c";
+      banner.style.border = `1.5px solid ${isCritical ? "#f87171" : "#fb923c"}`;
+      banner.innerHTML = `⚠️ <strong>${topAlert.title}:</strong> ${topAlert.message}`;
+    } else {
+      banner.style.display = "none";
+    }
+  } catch (err) {}
+}
+
+// Auto-refresh orders every 10 seconds for real-time dispatch alerts
+setInterval(() => {
+  const dash = document.getElementById("ngoDashboard");
+  if (dash && !dash.classList.contains("hidden")) {
+    showOrders();
+  }
+}, 10000);
+</script>
+</body>
+</html>

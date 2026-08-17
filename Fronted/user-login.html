@@ -1,0 +1,866 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n="userLoginTitle">User Login — Disaster Management System</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🆘</text></svg>" />
+  <style>
+    /* 🌐 Card Dimensions & Glow Accent */
+    .auth-card {
+      background: white;
+      width: 440px;
+      max-width: 92%;
+      margin: 20px auto 40px;
+      padding: 34px 30px 28px;
+      border-radius: 24px;
+      box-shadow: 0 20px 50px rgba(15, 23, 42, 0.12), 0 0 0 1px rgba(226, 232, 240, 0.8);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    /* Top decorative gradient bar */
+    .auth-card::before {
+      content: "";
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 6px;
+      background: linear-gradient(90deg, #2563eb, #0ea5e9, #38bdf8);
+    }
+
+    .auth-card h2 { 
+      margin: 4px 0 6px; 
+      font-size: 24px; 
+      font-weight: 800; 
+      color: #0f172a; 
+      letter-spacing: -0.3px;
+    }
+    .auth-card p.subtitle { 
+      color: #64748b; 
+      font-size: 13px; 
+      margin: 0 0 22px; 
+      line-height: 1.4;
+    }
+
+    /* 🎨 Polished Inputs with Subtle Icons */
+    .auth-card input {
+      display: block; 
+      width: 100%; 
+      padding: 12px 16px;
+      margin: 0 0 14px; 
+      border: 1.5px solid #e2e8f0;
+      border-radius: 12px; 
+      font-size: 14px; 
+      font-family: inherit;
+      background: #f8fafc;
+      box-sizing: border-box; 
+      transition: all 0.25s ease;
+    }
+    .auth-card input:focus { 
+      outline: none; 
+      border-color: #2563eb; 
+      background: #ffffff;
+      box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.12);
+    }
+
+    .password-wrapper { position: relative; margin: 0 0 6px; }
+    .password-wrapper input { margin: 0; padding-right: 44px; }
+    .password-wrapper span {
+      position: absolute; 
+      right: 14px; 
+      top: 50%;
+      transform: translateY(-50%); 
+      cursor: pointer;
+      font-size: 17px; 
+      user-select: none;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+    .password-wrapper span:hover { opacity: 1; }
+
+    .hint-text { 
+      font-size: 11.5px; 
+      color: #94a3b8; 
+      margin: 6px 0 16px; 
+      text-align: left; 
+      display: flex;
+      align-items: center;
+      gap: 5px;
+    }
+
+    /* 🚀 Glowing Gradient Action Button */
+    .btn-main {
+      width: 100%; 
+      padding: 13px;
+      background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 100%);
+      color: white; 
+      border: none; 
+      border-radius: 12px;
+      font-size: 15px; 
+      font-weight: 700; 
+      cursor: pointer;
+      margin: 8px 0 0; 
+      transition: all 0.25s ease; 
+      font-family: inherit;
+      box-shadow: 0 8px 20px rgba(37, 99, 235, 0.3);
+    }
+    .btn-main:hover { 
+      transform: translateY(-2px); 
+      box-shadow: 0 12px 24px rgba(37, 99, 235, 0.4); 
+      background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+    }
+
+    /* 🔗 Navigation Links */
+    .auth-links { margin-top: 20px; font-size: 13px; color: #64748b; }
+    .auth-links a { color: #2563eb; text-decoration: none; font-weight: 600; }
+    .auth-links a:hover { text-decoration: underline; }
+    .divider { margin: 18px 0 14px; border: none; border-top: 1px solid #f1f5f9; }
+
+    /* 🏷️ Role Badge */
+    .role-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      background: #eff6ff; 
+      color: #2563eb;
+      font-size: 11px; 
+      font-weight: 800; 
+      padding: 4px 12px;
+      border-radius: 20px; 
+      margin-bottom: 12px; 
+      letter-spacing: 0.5px;
+      border: 1px solid #dbeafe;
+    }
+
+    /* 🚨 Modern Pre-login SOS Section */
+    .sos-btn-top {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      width: 440px; 
+      max-width: 92%;
+      margin: 0 auto 12px; 
+      padding: 13px 16px;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white; 
+      border: none; 
+      border-radius: 14px;
+      font-size: 14.5px; 
+      font-weight: 800; 
+      cursor: pointer;
+      font-family: inherit; 
+      box-shadow: 0 6px 20px rgba(239, 68, 68, 0.35);
+      animation: sosPulse 2s infinite;
+      letter-spacing: 0.2px;
+    }
+    .emergency-strip { 
+      background: white; 
+      border-radius: 16px; 
+      padding: 14px 16px; 
+      margin: 0 auto 16px; 
+      width: 440px;
+      max-width: 92%; 
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08); 
+      border: 1px solid #fee2e2;
+    }
+    .emergency-strip p { font-weight: 700; color: #dc2626; font-size: 12px; margin: 0 0 10px; }
+    .emergency-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .emergency-grid a { 
+      background: #fef2f2; 
+      color: #dc2626; 
+      padding: 8px 4px; 
+      border-radius: 10px; 
+      text-decoration: none; 
+      font-weight: 700; 
+      font-size: 12.5px; 
+      text-align: center;
+      border: 1px solid #fecaca;
+      transition: transform 0.2s;
+    }
+    .emergency-grid a:hover { transform: translateY(-2px); }
+    .emergency-grid a.police { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+    .emergency-grid a.amb    { background: #f0fdf4; color: #16a34a; border-color: #bbf7d0; }
+    .emergency-grid a.fire   { background: #fff7ed; color: #ea580c; border-color: #fed7aa; }
+
+    /* Popups */
+    .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); z-index: 9999; align-items: center; justify-content: center; }
+    .popup-overlay.active { display: flex; }
+    .popup-box { background: white; border-radius: 20px; padding: 28px; width: 340px; max-width: 95%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25); text-align: center; }
+    .popup-box h3 { margin: 0 0 14px; font-size: 18px; color: #0f172a; font-weight: 700; }
+    .popup-box input { display: block; width: 100%; padding: 11px 14px; margin: 0 0 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; box-sizing: border-box; }
+    .popup-btn { width: 100%; padding: 12px; background: #2563eb; color: white; border: none; border-radius: 10px; font-size: 14px; font-weight: 700; cursor: pointer; }
+    .popup-cancel { display: block; margin-top: 12px; color: #94a3b8; font-size: 13px; cursor: pointer; }
+  </style>
+</head>
+<body>
+<!-- Add inside <body> at the top -->
+<button id="themeToggle" class="global-theme-btn" title="Toggle Theme">🌙</button>
+<!-- Pre-login SOS -->
+<div style="padding-top:24px;">
+  <button class="sos-btn-top" onclick="preLoginSOS()" data-i18n="sosBtnLabel">🆘 EMERGENCY SOS — No Login Needed</button>
+
+  <div class="emergency-strip">
+    <p data-i18n="emergencyNums">📞 Emergency Numbers — Call Direct (No Internet)</p>
+    <div class="emergency-grid">
+      <a href="tel:112">📞 112<br><small data-i18n="numEmergency" style="font-weight:400;font-size:11px;">Emergency</small></a>
+      <a href="tel:100" class="police">📞 100<br><small data-i18n="numPolice" style="font-weight:400;font-size:11px;">Police</small></a>
+      <a href="tel:102" class="amb">📞 102<br><small data-i18n="numAmbulance" style="font-weight:400;font-size:11px;">Ambulance</small></a>
+      <a href="tel:101" class="fire">📞 101<br><small data-i18n="numFire" style="font-weight:400;font-size:11px;">Fire Brigade</small></a>
+    </div>
+  </div>
+</div>
+
+<div class="auth-card">
+  <span class="role-badge">👤 CITIZEN PORTAL</span>
+  <h2>Welcome Back</h2>
+  <p class="subtitle">Enter your credentials to access live disaster response and relief services</p>
+
+  <input type="text" id="loginUser" placeholder="Email or 10-digit Mobile Number" autocomplete="username" />
+
+  <div class="password-wrapper">
+    <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password" />
+    <span onclick="togglePass('loginPass', this)">👁</span>
+  </div>
+  <p class="hint-text">🔒 Your emergency credentials are secure & encrypted</p>
+
+  <button class="btn-main" onclick="doLogin()">🚀 Login to Dashboard</button>
+
+  <hr class="divider" />
+
+  <div class="auth-links">
+    <p style="margin:0 0 8px;"><a href="#" onclick="openForgot()">Forgot Password?</a></p>
+    <p style="margin:0 0 8px;">New citizen? <a href="user-register.html">Create an Account</a></p>
+    <p style="margin:0;">Disaster response team? <a href="admin-login.html">Admin Login →</a></p>
+  </div>
+</div>
+
+<!-- 🔐 FORGOT & RESET PASSWORD STEP-BY-STEP POPUP -->
+<div class="popup-overlay" id="forgotPopup">
+  <div class="popup-box" style="width: 400px; max-width: 95%; padding: 30px 26px; border-radius: 22px; text-align: center; box-shadow: 0 25px 60px rgba(0,0,0,0.35);">
+    
+    <div style="font-size: 32px; margin-bottom: 4px;">🔐</div>
+    <h3 style="margin: 0 0 6px; font-size: 20px; font-weight: 800; color: #0f172a;" id="fpHeading">Reset Password</h3>
+    <p style="color: #64748b; font-size: 13px; margin: 0 0 18px;" id="fpSubtext">Enter your registered mobile number to receive an OTP</p>
+
+    <!-- STEP 1: Mobile Input -->
+    <div id="fpStep1">
+      <div style="display: flex; margin-bottom: 14px;">
+        <span style="background: #1976d2; color: white; padding: 11px 14px; border-radius: 10px 0 0 10px; font-size: 14px; font-weight: 700; display: flex; align-items: center;">+91</span>
+        <input 
+          type="text" 
+          id="fpMobile" 
+          placeholder="10-digit Registered Mobile" 
+          maxlength="10" 
+          inputmode="numeric" 
+          pattern="[0-9]{10}"
+          oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+          style="margin: 0; border-radius: 0 10px 10px 0; border-left: none; width: 100%; padding: 11px 14px; border: 1.5px solid #e2e8f0; font-size: 14px; outline: none;" 
+        />
+      </div>
+    </div>
+
+    <!-- STEP 2: OTP Input + 30s Countdown Resend -->
+    <div id="fpStep2" style="display: none;">
+      <input 
+        type="text" 
+        id="fpOtp" 
+        placeholder="Enter 6-digit OTP" 
+        maxlength="6" 
+        inputmode="numeric"
+        oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+        style="display: block; width: 100%; padding: 11px 14px; margin-bottom: 8px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 15px; text-align: center; letter-spacing: 4px; font-weight: 700;" 
+      />
+      <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; font-size: 12px;">
+        <span id="fpTimerText" style="color: #64748b;">Resend in: <strong id="fpTimerCount" style="color: #2563eb;">30s</strong></span>
+        <button type="button" id="fpResendBtn" onclick="resendFpOtp()" style="background: none; border: none; color: #94a3b8; font-weight: 700; cursor: not-allowed; font-size: 12px;" disabled>🔄 Resend OTP</button>
+      </div>
+    </div>
+
+    <!-- STEP 3: New Password (with Toggle) & Confirm Password (No Toggle) -->
+    <div id="fpStep3" style="display: none; text-align: left;">
+      <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">New Password</label>
+      <div class="password-wrapper" style="position: relative; margin-bottom: 6px;">
+        <input 
+          type="password" 
+          id="fpNewPass" 
+          placeholder="Enter new strong password" 
+          style="display: block; width: 100%; padding: 11px 40px 11px 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px;" 
+        />
+        <span onclick="togglePass('fpNewPass', this)" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; user-select: none;">👁</span>
+      </div>
+      <p style="font-size: 11px; color: #ef4444; margin: 0 0 10px; line-height: 1.3;">Min 8 chars — must contain uppercase, lowercase, number & special char.</p>
+
+      <label style="font-size: 12px; font-weight: 700; color: #475569; display: block; margin-bottom: 4px;">Confirm Password</label>
+      <input 
+        type="password" 
+        id="fpConfirmPass" 
+        placeholder="Re-enter new password" 
+        style="display: block; width: 100%; padding: 11px 14px; margin-bottom: 14px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px;" 
+      />
+    </div>
+
+    <!-- Dynamic Action Button -->
+    <button 
+      class="popup-btn" 
+      id="fpMainBtn" 
+      onclick="handleForgotWorkflow()" 
+      style="width: 100%; padding: 13px; background: linear-gradient(135deg, #16a34a, #15803d); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; transition: all 0.3s ease;">
+      🚀 Send OTP
+    </button>
+
+    <span class="popup-cancel" onclick="closeForgot()" style="display: block; margin-top: 14px; color: #94a3b8; font-size: 13px; cursor: pointer; font-weight: 600;">Cancel</span>
+  </div>
+</div>
+
+<!-- SOS Contact Popup (pre-login) -->
+<div id="sosContactPopup" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.75);z-index:999999;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:white;border-radius:18px;width:100%;max-width:380px;max-height:90vh;overflow-y:auto;box-shadow:0 24px 60px rgba(0,0,0,0.4);">
+    <div style="background:linear-gradient(135deg,#dc2626,#b91c1c);padding:18px 20px;border-radius:18px 18px 0 0;">
+      <h3 data-i18n="sosSendTitle" style="color:white;margin:0;font-size:17px;">🆘 EMERGENCY SOS</h3>
+      <p data-i18n="sosSubtitle" style="color:rgba(255,255,255,0.8);font-size:12px;margin:4px 0 0;">Select contacts to send your emergency alert</p>
+    </div>
+    <div id="sosGpsStatus" data-i18n="sosGettingGps" style="background:#f0fdf4;border-bottom:1px solid #e2e8f0;padding:10px 16px;font-size:12px;color:#16a34a;font-weight:600;">📡 Getting your location...</div>
+    <div style="padding:12px 16px;border-bottom:1px solid #f1f5f9;display:flex;align-items:center;gap:10px;background:#f8fafc;">
+      <input type="checkbox" id="sosSelectAll" onchange="sosToggleAll(this.checked)" style="width:18px;height:18px;cursor:pointer;accent-color:#dc2626;" />
+      <label for="sosSelectAll" data-i18n="sosSelectAll" style="font-weight:700;font-size:14px;color:#1e293b;cursor:pointer;">Select All</label>
+    </div>
+    <div id="sosContactList" style="padding:8px 16px;"></div>
+    <div style="padding:14px 16px;border-top:1px solid #f1f5f9;display:flex;gap:10px;">
+      <button onclick="closeSosPopup()" data-i18n="cancel" style="flex:1;padding:12px;background:#f1f5f9;color:#64748b;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;margin:0;">Cancel</button>
+      <button onclick="sendSosNow()" data-i18n="sosSendNow" style="flex:2;padding:12px;background:linear-gradient(135deg,#dc2626,#b91c1c);color:white;border:none;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin:0;">🆘 Send SOS Now</button>
+    </div>
+  </div>
+</div>
+
+<div id="offlineBanner" data-i18n="offlineBanner" style="display:none;position:fixed;top:0;left:0;right:0;background:#dc2626;color:white;text-align:center;padding:10px;font-size:13px;font-weight:600;z-index:999999;">
+  📴 You are offline — Emergency calls still work
+</div>
+
+<script>
+  // 🛡️ Admin Helpline Numbers for Pre-Login SOS
+window.ADMIN_NUMBERS = window.ADMIN_NUMBERS || [
+  "8260988604",   
+  "6743176287"    
+];
+// 🍞 Toast Notification System
+function showToast(msg, isSuccess = true) {
+  var old = document.getElementById("authToast");
+  if (old) old.remove();
+  var toast = document.createElement("div");
+  toast.id = "authToast";
+  toast.textContent = msg;
+  toast.style.cssText = `
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: ${isSuccess ? "#16a34a" : "#dc2626"};
+    color: white;
+    padding: 13px 26px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    z-index: 9999999;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    text-align: center;
+    transition: all 0.3s ease;
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => { if (toast) toast.remove(); }, 3000);
+}
+
+// 🔐 Fast Login
+async function doLogin() {
+  const identifier = document.getElementById("loginUser").value.trim();
+  const password   = document.getElementById("loginPass").value;
+
+  if (!identifier) { showToast("⚠️ Enter your Email or Mobile Number", false); return; }
+  if (!password)   { showToast("⚠️ Please enter your password", false); return; }
+
+  if (identifier.startsWith("ADM")) {
+    showToast("⚠️ This is an Admin ID. Please use the Admin Login page.", false); return;
+  }
+  if (!identifier.includes("@") && !/^[0-9]{10}$/.test(identifier)) {
+    showToast("⚠️ Enter a valid Email or 10-digit Phone Number", false); return;
+  }
+
+  try {
+    const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    const apiUrl = isLocal ? "http://localhost:5000/api/login" : "https://alertifyy.onrender.com/api/login";
+
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ identifier, password, role: "user" })
+    });
+    const data = await res.json();
+
+    if (!res.ok) { showToast("❌ " + (data.message || "Login failed"), false); return; }
+    if (!data.user || data.user.role !== "user") {
+      showToast("❌ Invalid role. Citizens only.", false); return;
+    }
+
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("loggedInUser", identifier);
+    localStorage.setItem("userName", data.user.name || "");
+    localStorage.setItem("userRole", "user");
+
+    showToast("✅ Login successful! Loading dashboard...", true);
+    setTimeout(() => {
+      window.location.href = "index.html";
+    }, 800);
+
+  } catch (e) {
+    showToast("❌ Server connection error", false);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  document.getElementById("loginPass").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") doLogin();
+  });
+  document.getElementById("loginUser").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") doLogin();
+  });
+  function checkOnline() {
+    document.getElementById("offlineBanner").style.display = navigator.onLine ? "none" : "block";
+  }
+  window.addEventListener("online", checkOnline);
+  window.addEventListener("offline", checkOnline);
+  checkOnline();
+});
+
+function togglePass(id, icon) {
+  const f = document.getElementById(id);
+  if (f.type === "password") { f.type = "text"; icon.textContent = "🙈"; }
+  else { f.type = "password"; icon.textContent = "👁"; }
+}
+
+// ============================================================
+// FORGOT & RESET PASSWORD WORKFLOW WITH TIMER & VALIDATION
+// ============================================================
+
+let fpStep = 1;
+let fpTimerInterval = null;
+let fpCountdown = 30;
+
+function openForgot() {
+  fpStep = 1;
+  clearInterval(fpTimerInterval);
+
+  // Reset inputs
+  document.getElementById("fpMobile").value = "";
+  document.getElementById("fpOtp").value = "";
+  document.getElementById("fpNewPass").value = "";
+  document.getElementById("fpConfirmPass").value = "";
+  document.getElementById("fpMobile").disabled = false;
+
+  // Set Views
+  document.getElementById("fpStep1").style.display = "block";
+  document.getElementById("fpStep2").style.display = "none";
+  document.getElementById("fpStep3").style.display = "none";
+
+  document.getElementById("fpHeading").textContent = "Reset Password";
+  document.getElementById("fpSubtext").textContent = "Enter your registered mobile number to receive an OTP";
+  document.getElementById("fpMainBtn").textContent = "🚀 Send OTP";
+  document.getElementById("fpMainBtn").style.background = "linear-gradient(135deg, #16a34a, #15803d)";
+
+  document.getElementById("forgotPopup").classList.add("active");
+}
+
+function closeForgot() {
+  document.getElementById("forgotPopup").classList.remove("active");
+  clearInterval(fpTimerInterval);
+  fpStep = 1;
+}
+
+// ⏱️ 30-Second Countdown Timer for Resend OTP
+function startFpTimer() {
+  clearInterval(fpTimerInterval);
+  fpCountdown = 30;
+  
+  const timerText = document.getElementById("fpTimerText");
+  const countEl = document.getElementById("fpTimerCount");
+  const resendBtn = document.getElementById("fpResendBtn");
+
+  timerText.style.display = "inline";
+  resendBtn.disabled = true;
+  resendBtn.style.color = "#94a3b8";
+  resendBtn.style.cursor = "not-allowed";
+
+  fpTimerInterval = setInterval(() => {
+    fpCountdown--;
+    countEl.textContent = fpCountdown + "s";
+
+    if (fpCountdown <= 0) {
+      clearInterval(fpTimerInterval);
+      timerText.style.display = "none";
+      resendBtn.disabled = false;
+      resendBtn.style.color = "#2563eb";
+      resendBtn.style.cursor = "pointer";
+    }
+  }, 1000);
+}
+
+// 🔄 Resend OTP Function
+async function resendFpOtp() {
+  const mobile = document.getElementById("fpMobile").value.trim();
+  const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+
+  try {
+    const res = await fetch(`${baseUrl}/request-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ mobile })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      showToast("❌ " + (data.message || "Could not resend OTP"), false);
+      return;
+    }
+    showToast("✅ OTP Resent Successfully!", true);
+    startFpTimer();
+  } catch (e) {
+    showToast("❌ Server connection error", false);
+  }
+}
+
+// 🚀 Main Workflow Stepper (Step 1 -> Step 2 -> Step 3)
+async function handleForgotWorkflow() {
+  const mobile = document.getElementById("fpMobile").value.trim();
+  const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+
+  // ----------------------------------------------------
+  // STEP 1: Send OTP to Registered Mobile
+  // ----------------------------------------------------
+  if (fpStep === 1) {
+    if (!/^[0-9]{10}$/.test(mobile)) {
+      showToast("⚠️ Please enter a valid 10-digit registered mobile number.", false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${baseUrl}/request-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mobile })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showToast("❌ " + (data.message || "User not found with this number"), false);
+        return;
+      }
+
+      showToast("✅ OTP sent! Check console / SMS.", true);
+
+      // Transition to Step 2
+      fpStep = 2;
+      document.getElementById("fpMobile").disabled = true;
+      document.getElementById("fpStep2").style.display = "block";
+      document.getElementById("fpHeading").textContent = "Verify OTP";
+      document.getElementById("fpSubtext").textContent = `Enter the 6-digit code sent to +91 ${mobile}`;
+      document.getElementById("fpMainBtn").textContent = "🔍 Verify OTP";
+      document.getElementById("fpMainBtn").style.background = "linear-gradient(135deg, #2563eb, #1d4ed8)";
+
+      startFpTimer();
+    } catch (e) {
+      showToast("❌ Server connection error", false);
+    }
+  } 
+  
+  // ----------------------------------------------------
+  // STEP 2: Verify OTP
+  // ----------------------------------------------------
+  else if (fpStep === 2) {
+    const otp = document.getElementById("fpOtp").value.trim();
+
+    if (!otp || otp.length < 6) {
+      showToast("⚠️ Enter the complete 6-digit OTP.", false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${baseUrl}/verify-otp`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mobile, otp })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showToast("❌ " + (data.message || "Invalid or expired OTP"), false);
+        return;
+      }
+
+      showToast("✅ OTP Verified! Create your new password.", true);
+      clearInterval(fpTimerInterval);
+
+      // Transition to Step 3
+      fpStep = 3;
+      document.getElementById("fpStep1").style.display = "none";
+      document.getElementById("fpStep2").style.display = "none";
+      document.getElementById("fpStep3").style.display = "block";
+      document.getElementById("fpHeading").textContent = "Create New Password";
+      document.getElementById("fpSubtext").textContent = "Set a strong password different from previous ones";
+      document.getElementById("fpMainBtn").textContent = "💾 Save New Password";
+      document.getElementById("fpMainBtn").style.background = "linear-gradient(135deg, #16a34a, #15803d)";
+    } catch (e) {
+      showToast("❌ Server connection error", false);
+    }
+  } 
+  
+  // ----------------------------------------------------
+  // STEP 3: Validate & Save New Password
+  // ----------------------------------------------------
+  else if (fpStep === 3) {
+    const newPass = document.getElementById("fpNewPass").value;
+    const confirmPass = document.getElementById("fpConfirmPass").value;
+
+    if (!newPass) {
+      showToast("⚠️ Please enter a new password.", false);
+      return;
+    }
+
+    // Minimum 8 characters, uppercase, lowercase, digit, and special symbol regex
+    const pwRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+    if (!pwRegex.test(newPass)) {
+      showToast("⚠️ Password must be 8+ chars (uppercase, lowercase, number & symbol).", false);
+      return;
+    }
+
+    if (newPass !== confirmPass) {
+      showToast("⚠️ Passwords do not match.", false);
+      return;
+    }
+
+    try {
+      const res = await fetch(`${baseUrl}/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mobile, newPassword: newPass })
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showToast("❌ " + (data.message || "Failed to reset password"), false);
+        return;
+      }
+
+      showToast("✅ Password reset successful! Please login.", true);
+      closeForgot();
+
+      // Pre-fill login box with mobile number
+      document.getElementById("loginUser").value = mobile;
+      document.getElementById("loginPass").value = "";
+    } catch (e) {
+      showToast("❌ Server connection error", false);
+    }
+  }
+}
+
+var _sosLat = null, _sosLng = null, _sosLink = null;
+
+function preLoginSOS() {
+  var proceed = confirm("⚠️ EMERGENCY SOS\n\nThis will lock your GPS location and send emergency alerts.\nMisuse is punishable by law.\n\nContinue?");
+  if (!proceed) return;
+
+  var popup = document.getElementById("sosContactPopup");
+  if (popup) popup.style.display = "flex";
+
+  _sosLat = null; _sosLng = null; _sosLink = null;
+  var gpsEl = document.getElementById("sosGpsStatus");
+  if (gpsEl) {
+    gpsEl.style.color = "#2563eb";
+    gpsEl.textContent = "📡 Fetching GPS location...";
+  }
+
+  buildSosContactList();
+
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(pos) {
+      _sosLat = pos.coords.latitude;
+      _sosLng = pos.coords.longitude;
+      _sosLink = "https://www.google.com/maps?q=" + _sosLat + "," + _sosLng;
+      if (gpsEl) {
+        gpsEl.style.color = "#16a34a";
+        gpsEl.textContent = "✅ Location Locked: " + _sosLat.toFixed(4) + ", " + _sosLng.toFixed(4);
+      }
+    }, function() {
+      if (gpsEl) {
+        gpsEl.style.color = "#ea580c";
+        gpsEl.textContent = "⚠️ Location unavailable. Proceeding with SMS.";
+      }
+    }, { timeout: 8000 });
+  }
+}
+
+function buildSosContactList() {
+  var list = document.getElementById("sosContactList");
+  if (!list) return;
+
+  var emergency = [
+    { name: "🚓 Police Control Room", number: "100" },
+    { name: "🚒 Fire Brigade", number: "101" },
+    { name: "🚑 Ambulance / Medical", number: "102" },
+    { name: "🆘 National Emergency", number: "112" }
+  ];
+
+  var saved = JSON.parse(localStorage.getItem("emergencyContacts") || "[]");
+  var html = "<p style='font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin:8px 0 6px;'>🚨 Emergency Services</p>";
+  
+  emergency.forEach(function(c) {
+    html += "<label style='display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f1f5f9;cursor:pointer;'>"
+      + "<input type='checkbox' class='sos-contact-cb' value='" + c.number + "' checked style='width:18px;height:18px;accent-color:#dc2626;' />"
+      + "<span style='flex:1;'><strong style='font-size:13.5px;color:#1e293b;display:block;'>" + c.name + "</strong>"
+      + "<span style='font-size:12px;color:#64748b;'>Direct: " + c.number + "</span></span></label>";
+  });
+
+  if (window.ADMIN_NUMBERS && window.ADMIN_NUMBERS.length > 0) {
+    html += "<p style='font-size:11px;font-weight:700;color:#94a3b8;margin:12px 0 6px;'>🛡️ Admin Contacts</p>";
+    window.ADMIN_NUMBERS.forEach(function(num) {
+      if (!num || num.includes("xxx")) return;
+      html += "<label style='display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f1f5f9;cursor:pointer;'>"
+        + "<input type='checkbox' class='sos-contact-cb' value='" + num + "' checked style='width:18px;height:18px;accent-color:#dc2626;' />"
+        + "<span style='flex:1;'><strong style='font-size:13.5px;color:#1e293b;display:block;'>Admin Authority</strong>"
+        + "<span style='font-size:12px;color:#64748b;'>📞 " + num + "</span></span></label>";
+    });
+  }
+
+  html += "<p style='font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin:12px 0 6px;'>👤 Personal Saved Contacts</p>";
+  if (saved.length > 0) {
+    saved.forEach(function(c) {
+      var num = String(c.number).replace(/\D/g, "");
+      html += "<label style='display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #f1f5f9;cursor:pointer;'>"
+        + "<input type='checkbox' class='sos-contact-cb' value='" + num + "' checked style='width:18px;height:18px;accent-color:#dc2626;' />"
+        + "<span style='flex:1;'><strong style='font-size:13.5px;color:#1e293b;display:block;'>" + c.name + "</strong>"
+        + "<span style='font-size:12px;color:#64748b;'>📞 " + c.number + "</span></span></label>";
+    });
+  } else {
+    html += "<p style='font-size:12px;color:#94a3b8;padding:4px 0;'>No personal contacts saved yet.</p>";
+  }
+
+  list.innerHTML = html;
+}
+
+function sosToggleAll(checked) {
+  document.querySelectorAll(".sos-contact-cb").forEach(function(cb) { cb.checked = checked; });
+}
+
+function closeSosPopup() {
+  var popup = document.getElementById("sosContactPopup");
+  if (popup) popup.style.display = "none";
+}
+
+async function sendSosNow() {
+  var selected = [];
+  document.querySelectorAll(".sos-contact-cb:checked").forEach(function(cb) {
+    if (cb.value && !selected.includes(cb.value)) selected.push(cb.value);
+  });
+
+  if (!selected.length) {
+    showToast("⚠️ Please select at least one contact.", false);
+    return;
+  }
+
+  var locText = _sosLink ? "📍 Location: " + _sosLink : "⚠️ Location unavailable";
+  var msg = "🆘 EMERGENCY SOS ALERT!\n\n"
+    + "[PRE-LOGIN CITIZEN ALERT]\n"
+    + locText + "\n\n"
+    + "Urgent assistance required! Please respond immediately.\n"
+    + "(Disaster Management System)";
+
+  var payload = {
+    numbers: selected,
+    userName: "Pre-Login Citizen",
+    mobile: "N/A (Pre-Login)",
+    state: "N/A",
+    district: "N/A",
+    latitude: _sosLat,
+    longitude: _sosLng,
+    googleMapsLink: _sosLink || "",
+    isPreLogin: true
+  };
+
+  if (navigator.onLine) {
+    try {
+      const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+      const apiUrl = isLocal ? "http://localhost:5000/api/sos" : "https://alertifyy.onrender.com/api/sos";
+      await fetch(apiUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload)
+      });
+      showToast("✅ SOS Alert registered on server!");
+    } catch(e) {}
+  }
+
+  closeSosPopup();
+
+  // Send SMS to selected contacts only
+  if (selected.length > 0) {
+    window.location.href = "sms:" + selected.join(",") + "?body=" + encodeURIComponent(msg);
+  }
+
+  // Open Direct Dial modal with ALL contacts
+  setTimeout(function() {
+    openPreLoginCallModal();
+  }, 900);
+}
+
+function openPreLoginCallModal() {
+  var existing = document.getElementById("preLoginCallModal");
+  if (existing) existing.remove();
+
+  var defaultNums = [
+    { name: "Emergency (112)", number: "112", color: "#dc2626" },
+    { name: "Police (100)", number: "100", color: "#1d4ed8" },
+    { name: "Ambulance (102)", number: "102", color: "#16a34a" },
+    { name: "Fire (101)", number: "101", color: "#ea580c" }
+  ];
+
+  var saved = JSON.parse(localStorage.getItem("emergencyContacts") || "[]");
+  var callLinks = defaultNums.map(function(n) {
+    return `<a href="tel:${n.number}" style="display:block;padding:11px;background:${n.color};color:white;border-radius:10px;text-decoration:none;font-weight:700;font-size:13.5px;margin:6px 0;text-align:center;">📞 Call ${n.name}</a>`;
+  }).join("");
+
+  if (window.ADMIN_NUMBERS && window.ADMIN_NUMBERS.length > 0) {
+    window.ADMIN_NUMBERS.forEach(function(num) {
+      if (!num || num.includes("xxx")) return;
+      callLinks += `<a href="tel:${num}" style="display:block;padding:11px;background:#475569;color:white;border-radius:10px;text-decoration:none;font-weight:700;font-size:13.5px;margin:6px 0;text-align:center;">🛡️ Call Admin (${num})</a>`;
+    });
+  }
+
+  if (saved.length > 0) {
+    callLinks += "<div style='font-size:12px;font-weight:700;color:#64748b;margin:10px 0 4px;text-align:left;'>Saved Contacts</div>";
+    saved.forEach(function(c) {
+      var num = String(c.number).replace(/\D/g, "");
+      callLinks += `<a href="tel:${num}" style="display:block;padding:10px;background:#f1f5f9;color:#1e293b;border:1px solid #cbd5e1;border-radius:10px;text-decoration:none;font-weight:700;font-size:13px;margin:4px 0;text-align:center;">👤 Call ${c.name} (${c.number})</a>`;
+    });
+  }
+
+  var div = document.createElement("div");
+  div.id = "preLoginCallModal";
+  div.style.cssText = "position:fixed;inset:0;background:rgba(15,23,42,0.8);backdrop-filter:blur(4px);z-index:9999999;display:flex;align-items:center;justify-content:center;padding:16px;";
+  div.innerHTML = `
+    <div style="background:white;border-radius:18px;padding:24px;max-width:380px;width:100%;max-height:85vh;overflow-y:auto;text-align:center;box-shadow:0 25px 50px rgba(0,0,0,0.3);">
+      <h3 style="color:#dc2626;margin:0 0 8px;font-size:18px;font-weight:800;">🆘 SOS Dispatched!</h3>
+      <p style="color:#64748b;font-size:13px;margin:0 0 14px;">Tap below to place a direct phone call:</p>
+      ${callLinks}
+      <button onclick="document.getElementById('preLoginCallModal').remove()" style="width:100%;margin-top:12px;padding:11px;background:#f1f5f9;color:#64748b;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;">Close</button>
+    </div>`;
+  document.body.appendChild(div);
+}
+</script>
+
+<script src="theme.js"></script>
+<script src="i18n.js"></script>
+</body>
+</html>

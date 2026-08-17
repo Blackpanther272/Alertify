@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title data-i18n="safeZonesTitle">Safe Zones | Disaster Management</title>
+  <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Segoe UI',sans-serif;background:#f4f7fb;color:#1e293b;}
+    header{background:linear-gradient(135deg,#0f172a,#1e293b);color:white;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+    header h1{font-size:17px;}
+    header a{color:#93c5fd;text-decoration:none;font-size:14px;}
+    .page-wrap{padding:16px;max-width:900px;margin:0 auto;}
+    h2{font-size:18px;color:#1e3a8a;margin-bottom:6px;}
+    .sub{color:#64748b;font-size:13px;margin-bottom:14px;line-height:1.6;}
+    #permScreen{text-align:center;padding:36px 20px;background:white;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.08);margin-top:16px;}
+    #permScreen .icon{font-size:56px;margin-bottom:14px;}
+    #permScreen h3{font-size:17px;color:#1e293b;margin-bottom:8px;}
+    #permScreen p{font-size:13px;color:#64748b;margin-bottom:18px;line-height:1.6;}
+    #allowBtn{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;border:none;padding:14px 32px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,0.35);}
+    #allowBtn:disabled{opacity:.6;cursor:not-allowed;}
+    .village-search{margin-top:20px;padding-top:16px;border-top:1px solid #e2e8f0;}
+    .village-search p{font-size:12px;color:#94a3b8;margin-bottom:8px;}
+    .village-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
+    .village-row input{padding:9px 12px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:13px;width:210px;outline:none;color:#1e293b;}
+    .village-row input:focus{border-color:#2563eb;}
+    .village-row button{padding:9px 14px;background:#7c3aed;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;}
+    .village-row button:disabled{opacity:.6;cursor:not-allowed;}
+    #mapScreen{display:none;}
+    #safeMap{width:100%;height:420px;border-radius:12px;border:1.5px solid #e2e8f0;margin-bottom:10px;}
+    #statusBox{padding:10px 14px;background:white;border-radius:8px;border:1px solid #e2e8f0;font-size:13px;margin-bottom:14px;}
+    .legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;color:#475569;}
+    .leg-item{display:flex;align-items:center;gap:5px;}
+    .leg-dot{width:12px;height:12px;border-radius:50%;display:inline-block;}
+    .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
+    .sz-card{background:white;border-radius:10px;padding:12px 14px;border-left:4px solid #2563eb;box-shadow:0 2px 8px rgba(0,0,0,0.07);}
+    .sz-card h4{font-size:13px;margin-bottom:4px;color:#1e293b;}
+    .sz-card p{font-size:12px;color:#64748b;margin:2px 0;}
+    .sz-card a{font-size:12px;color:#2563eb;font-weight:600;text-decoration:none;}
+    footer{text-align:center;color:#94a3b8;font-size:12px;padding:20px;}
+    @media(max-width:600px){#safeMap{height:260px;}.page-wrap{padding:10px;}.cards{grid-template-columns:1fr;}}
+  </style>
+</head>
+<body>
+  <header>
+    <h1 data-i18n="safeZonesTitle">🛟 Safe Zones Near You</h1>
+    <a href="index.html" data-i18n="backToDashboard">← Back to Dashboard</a>
+  </header>
+  <div class="page-wrap">
+    <h2 data-i18n="safeZonesH2">Cyclone Shelters, Hospitals, Police & Fire Stations Near You</h2>
+    <p class="sub">Shows govt cyclone shelters, hospitals, police & fire stations within 10 km using free OpenStreetMap data. No API key needed.</p>
+
+    <div id="permScreen">
+      <div class="icon">🛟</div>
+      <h3 data-i18n="safeZonesPermH3">Allow Location to Show Safe Zones</h3>
+      <p data-i18n="safeZonesPermP">Tap Allow Location below. Your browser will ask for GPS permission. Tap Allow to see cyclone shelters, hospitals and police near you.</p>
+      <button id="allowBtn" onclick="startSafeZones()">📍 Allow Location & Show Map</button>
+      <p id="permError" style="color:#dc2626;font-size:13px;margin-top:12px;display:none;"></p>
+
+      <div class="village-search">
+        <p>📶 GPS slow or blocked? Search your village instead:</p>
+        <div class="village-row">
+          <input
+            id="villageInput"
+            placeholder="e.g. Bindipur Puri"
+            onkeydown="if(event.key==='Enter') searchVillage(this.value)"
+          />
+          <button id="villageSearchBtn" onclick="searchVillage(document.getElementById('villageInput').value)">
+            🔍 Search
+          </button>
+        </div>
+        <p style="font-size:11px;color:#94a3b8;margin-top:6px;">Uses OpenStreetMap — free, no account needed</p>
+      </div>
+    </div>
+
+    <div id="mapScreen">
+      <div id="safeMap"></div>
+      <div class="legend">
+        <span class="leg-item"><span class="leg-dot" style="background:#7c3aed"></span> Cyclone Shelter</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#dc2626"></span> Hospital</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#2563eb"></span> Police Station</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#ea580c"></span> Fire Station</span>
+        <span class="leg-item"><span class="leg-dot" style="background:#0891b2"></span> Health Centre</span>
+      </div>
+      <div id="statusBox">⏳ Loading safe zones near you...</div>
+      <div class="cards" id="szCards"></div>
+    </div>
+  </div>
+  <footer>© 2026 Disaster Management System</footer>
+
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="i18n.js"></script>
+  <script>
+    console.log("Running Updated Production Map Layer");
+    var map = null;
+
+    /* ── LOCATION: GPS only, no IP fallback ──────────────────── */
+    function startSafeZones() {
+      var btn = document.getElementById('allowBtn');
+      btn.textContent = '📡 Waiting for GPS…';
+      btn.disabled = true;
+      document.getElementById('permError').style.display = 'none';
+
+      if (!navigator.geolocation) {
+        showPermError('❌ Your browser does not support GPS. Use Chrome or Firefox.');
+        btn.disabled = false;
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        onGotLocation,
+        onLocationError,
+        {
+          enableHighAccuracy: true,
+          timeout: 20000,
+          maximumAge: 0
+        }
+      );
+    }
+
+    function onLocationError(err) {
+      var btn = document.getElementById('allowBtn');
+      btn.textContent = '📍 Allow Location & Show Map';
+      btn.disabled = false;
+      var msgs = {
+        1: '❌ Location blocked. Tap the lock icon in your browser and allow location. Or use village search below.',
+        2: '❌ GPS unavailable. Move to open area or use village search below.',
+        3: '⚠️ GPS timed out. Move to open area or use village search below.'
+      };
+      showPermError(msgs[err.code] || '❌ Could not get location. Use village search below.');
+    }
+
+    function showPermError(msg) {
+      var el = document.getElementById('permError');
+      el.textContent = msg;
+      el.style.display = 'block';
+    }
+
+    /* ── VILLAGE SEARCH ── */
+    async function searchVillage(query) {
+      if (!query || query.trim().length < 2) {
+        alert('Type your village name.\nExample: Bindipur\nExample: Bindipur Puri');
+        return;
+      }
+      var btn = document.getElementById('villageSearchBtn');
+      var errEl = document.getElementById('permError');
+      if (btn) { btn.textContent = '🔍 Searching…'; btn.disabled = true; }
+      if (errEl) errEl.style.display = 'none';
+
+      var q = query.trim();
+      var found = null;
+
+      var nominatimAttempts = [
+        q + ', Puri, Odisha, India',
+        q + ', Odisha, India',
+        q + ', Odisha',
+        q + ', India',
+        q,
+        q.split(' ')[0] + ', Odisha, India',
+      ];
+      for (var attempt of nominatimAttempts) {
+        try {
+          var r = await fetch(
+            'https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(attempt) +
+            '&format=json&limit=5&countrycodes=in&addressdetails=1',
+            { headers: { 'Accept-Language': 'en', 'User-Agent': 'DisasterApp/1.0' } }
+          );
+          var data = await r.json();
+          if (data && data.length > 0) {
+            found = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), name: data[0].display_name };
+            break;
+          }
+        } catch(e) {}
+      }
+
+      if (!found) {
+        try {
+          var r2 = await fetch(
+            'https://photon.komoot.io/api/?q=' + encodeURIComponent(q + ' Odisha India') + '&limit=5&lang=en',
+            { headers: { 'User-Agent': 'DisasterApp/1.0' } }
+          );
+          var d2 = await r2.json();
+          if (d2 && d2.features && d2.features.length > 0) {
+            var f = d2.features[0];
+            found = { lat: f.geometry.coordinates[1], lng: f.geometry.coordinates[0], name: f.properties.name + ', ' + (f.properties.state || 'Odisha') };
+          }
+        } catch(e) {}
+      }
+
+      if (btn) { btn.textContent = '🔍 Search'; btn.disabled = false; }
+
+      if (!found) {
+        var words = q.split(' ');
+        var districtGuess = words.length > 1 ? words[words.length - 1] : 'Puri';
+        var fallbackLat = 19.8135, fallbackLng = 85.8312; 
+
+        try {
+          var r4 = await fetch(
+            'https://nominatim.openstreetmap.org/search?q=' +
+            encodeURIComponent(districtGuess + ' district, Odisha, India') + '&format=json&limit=1',
+            { headers: { 'Accept-Language': 'en', 'User-Agent': 'DisasterApp/1.0' } }
+          );
+          var d4 = await r4.json();
+          if (d4 && d4.length > 0) { fallbackLat = parseFloat(d4[0].lat); fallbackLng = parseFloat(d4[0].lon); }
+        } catch(e) {}
+
+        onGotLocation({ coords: { latitude: fallbackLat, longitude: fallbackLng, accuracy: 5000 }, fromSearch: true, name: districtGuess + ' district area' });
+
+        var gmapsUrl = 'https://www.google.com/maps/search/' + encodeURIComponent(q + ' Odisha');
+        setStatus('');
+        document.getElementById('statusBox').innerHTML =
+          '<b style="color:#dc2626;">📍 "' + q + '" not in map database.</b>' +
+          '<br><span style="font-size:12px;color:#64748b;">Showing ' + districtGuess + ' district. Use Google Maps to find your exact village:</span>' +
+          '<div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;">' +
+          '<a href="' + gmapsUrl + '" target="_blank" style="background:#2563eb;color:white;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;text-align:center;display:block;">🔍 Search \"' + q + '\" on Google Maps →</a>' +
+          '<a href="https://www.google.com/maps/search/cyclone+shelter+near+' + encodeURIComponent(q + ' Odisha') + '" target="_blank" style="background:#7c3aed;color:white;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;text-align:center;display:block;">🏠 Find Cyclone Shelters near ' + q + ' on Google Maps →</a>' +
+          '</div>';
+
+        return;
+      }
+
+      onGotLocation({ coords: { latitude: found.lat, longitude: found.lng, accuracy: 50 }, fromSearch: true, name: found.name });
+    }
+
+    function onGotLocation(pos) {
+      document.getElementById('permScreen').style.display = 'none';
+      document.getElementById('mapScreen').style.display  = 'block';
+
+      var btn = document.getElementById('allowBtn');
+      btn.disabled = false;
+      btn.textContent = '✅ Location Found';
+
+      var btn2 = document.getElementById('villageSearchBtn');
+      if (btn2) { btn2.textContent = '🔍 Search'; btn2.disabled = false; }
+
+      var lat = pos.coords.latitude;
+      var lng = pos.coords.longitude;
+      var label = pos.fromSearch ? ('📍 ' + (pos.name || 'Searched location')) : ('📍 You are here · GPS ±' + Math.round(pos.coords.accuracy) + 'm');
+
+      if (!map) {
+        map = L.map('safeMap').setView([lat, lng], 14);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+          maxZoom: 19,
+          attribution: '© OpenStreetMap contributors'
+        }).addTo(map);
+      } else {
+        map.setView([lat, lng], 14);
+      }
+
+      setTimeout(() => map && map.invalidateSize(), 300);
+
+      var userIcon = L.divIcon({
+        className: '',
+        html: '<div style="width:16px;height:16px;border-radius:50%;background:#2563eb;border:3px solid white;box-shadow:0 0 0 6px rgba(37,99,246,.25);"></div>',
+        iconSize: [16,16], iconAnchor: [8,8]
+      });
+      L.marker([lat, lng], { icon: userIcon })
+        .addTo(map)
+        .bindPopup('<b>' + label + '</b>')
+        .openPopup();
+
+      document.getElementById('szCards').innerHTML = '';
+      setStatus('⏳ Searching for cyclone shelters, hospitals and safe zones within 10 km…');
+      loadSafeZones(lat, lng);
+    }
+
+    function setStatus(msg) {
+      document.getElementById('statusBox').textContent = msg;
+    }
+
+    /* ── LOAD SAFE ZONES ── */
+    async function loadSafeZones(lat, lng) {
+      var radius = 10000; 
+      var query = `[out:json][timeout:30];(node["emergency"="shelter"](around:${radius},${lat},${lng});way["emergency"="shelter"](around:${radius},${lat},${lng});node["amenity"="shelter"](around:${radius},${lat},${lng});node["amenity"="hospital"](around:${radius},${lat},${lng});way["amenity"="hospital"](around:${radius},${lat},${lng});node["amenity"="clinic"](around:${radius},${lat},${lng});node["amenity"="health_post"](around:${radius},${lat},${lng});node["amenity"="police"](around:${radius},${lat},${lng});node["amenity"="fire_station"](around:${radius},${lat},${lng});node["building"="hospital"](around:${radius},${lat},${lng});node["healthcare"="hospital"](around:${radius},${lat},${lng}););out center;`;
+
+      // Fallback clean parsing system avoids Content-Type header rejection chains
+      try {
+        console.log("Connecting directly to French OpenStreetMap Node...");
+        let response = await fetch('https://overpass.openstreetmap.fr/api/interpreter', {
+          method: 'POST',
+          body: 'data=' + encodeURIComponent(query)
+        });
+
+        if (!response.ok) throw new Error("French engine shifted");
+        
+        let data = await response.json();
+        processSafeZoneData(data, lat, lng);
+
+      } catch (err1) {
+        console.warn("Primary path shifted. Trying secondary database cluster...", err1);
+        
+        try {
+          let response2 = await fetch('https://overpass.kumi.systems/api/interpreter', {
+            method: 'POST',
+            body: 'data=' + encodeURIComponent(query)
+          });
+
+          if (!response2.ok) throw new Error("Fallback execution failed");
+          
+          let data2 = await response2.json();
+          processSafeZoneData(data2, lat, lng);
+          
+        } catch (err2) {
+          console.error("All map clusters unreachable", err2);
+          setStatus('❌ Network error loading safe zones. Showing Google Maps links below.');
+          showManualLinks();
+        }
+      }
+    }
+
+    function processSafeZoneData(data, lat, lng) {
+      if (!data.elements || data.elements.length === 0) {
+        setStatus('⚠️ No safe zones found within 10 km. Use the Google Maps links below to search manually.');
+        showManualLinks();
+        return;
+      }
+      var count = data.elements.filter(function(e) { return e.lat || e.center; }).length;
+      setStatus('✅ Found ' + count + ' safe zones within 10 km. Cyclone shelters shown in purple 🟣');
+      renderOverpassResults(data.elements, lat, lng);
+    }
+
+    /* ── RENDER OVERPASS RESULTS ─────────────────────────────── */
+    function renderOverpassResults(elements, userLat, userLng) {
+      var cards = document.getElementById('szCards');
+      var added = 0;
+
+      elements.forEach(function(place) {
+        var pLat = place.lat || (place.center && place.center.lat);
+        var pLng = place.lon || (place.center && place.center.lon);
+        if (!pLat || !pLng) return;
+
+        var tags = place.tags || {};
+        var name = tags.name || tags['name:en'] || tags['name:or'] || tags['name:hi'] || 'Unknown';
+        var amenity = tags.amenity || tags.emergency || tags.healthcare || tags.building || 'place';
+
+        var color = '#64748b', emoji = '📍', label = 'Safe Zone', priority = 5;
+
+        if (amenity === 'shelter' || tags.emergency === 'shelter') {
+          color = '#7c3aed'; emoji = '🏠'; label = 'Govt Cyclone Shelter'; priority = 1;
+        } else if (amenity === 'hospital' || tags.healthcare === 'hospital' || tags.building === 'hospital') {
+          color = '#dc2626'; emoji = '🏥'; label = 'Hospital'; priority = 2;
+        } else if (amenity === 'clinic' || amenity === 'health_post') {
+          color = '#0891b2'; emoji = '🏨'; label = 'Health Centre'; priority = 3;
+        } else if (amenity === 'police') {
+          color = '#2563eb'; emoji = '👮'; label = 'Police Station'; priority = 2;
+        } else if (amenity === 'fire_station') {
+          color = '#ea580c'; emoji = '🚒'; label = 'Fire Station'; priority = 3;
+        }
+
+        var dLat = (pLat - userLat) * 111;
+        var dLng = (pLng - userLng) * 111 * Math.cos(userLat * Math.PI / 180);
+        var distKm = Math.sqrt(dLat * dLat + dLng * dLng).toFixed(1);
+
+        var icon = L.divIcon({
+          className: '',
+          html: '<div style="background:' + color + ';color:white;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);">' + emoji + '</div>',
+          iconSize: [32, 32], iconAnchor: [16, 16]
+        });
+
+        var gmapsUrl = 'https://maps.google.com/?q=' + pLat + ',' + pLng;
+        var navUrl   = 'https://maps.google.com/maps?saddr=My+Location&daddr=' + pLat + ',' + pLng;
+
+        L.marker([pLat, pLng], { icon: icon }).addTo(map)
+          .bindPopup(
+            '<strong>' + emoji + ' ' + name + '</strong><br>' +
+            label + '<br>~' + distKm + ' km away<br>' +
+            '<a href="' + gmapsUrl + '" target="_blank">📍 View on Google Maps</a>  ' +
+            '<a href="' + navUrl + '" target="_blank">🧭 Navigate</a>'
+          );
+
+        var card = document.createElement('div');
+        card.className = 'sz-card';
+        card.style.borderLeftColor = color;
+        card.dataset.priority = priority;
+        card.innerHTML =
+          '<h4>' + emoji + ' ' + name + '</h4>' +
+          '<p>' + label + ' · ~' + distKm + ' km</p>' +
+          '<a href="' + gmapsUrl + '" target="_blank">📍 Google Maps</a>  ' +
+          '<a href="' + navUrl + '" target="_blank">🧭 Navigate</a>';
+        cards.appendChild(card);
+        added++;
+      });
+
+      var cardNodes = Array.from(cards.querySelectorAll('.sz-card'));
+      cardNodes.sort(function(a, b) { return a.dataset.priority - b.dataset.priority; });
+      cardNodes.forEach(function(c) { cards.appendChild(c); });
+
+      if (added === 0) {
+        setStatus('⚠️ No placeable safe zones found. Try the Google Maps links below.');
+        showManualLinks();
+      }
+    }
+
+    /* ── MANUAL GOOGLE MAPS FALLBACK ─────────────────────────── */
+    function showManualLinks() {
+      var c = map ? map.getCenter() : { lat: 0, lng: 0 };
+      var lat = c.lat.toFixed(4), lng = c.lng.toFixed(4);
+      var html =
+        '<div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">' +
+        '<a href="https://www.google.com/maps/search/cyclone+shelter/@' + lat + ',' + lng + ',12z" target="_blank" style="padding:10px;background:#7c3aed;color:white;border-radius:8px;text-decoration:none;font-weight:600;text-align:center;">🏠 Search Cyclone Shelters on Google Maps</a>' +
+        '<a href="https://www.google.com/maps/search/hospital/@' + lat + ',' + lng + ',13z" target="_blank" style="padding:10px;background:#dc2626;color:white;border-radius:8px;text-decoration:none;font-weight:600;text-align:center;">🏥 Search Hospitals on Google Maps</a>' +
+        '<a href="https://www.google.com/maps/search/police+station/@' + lat + ',' + lng + ',13z" target="_blank" style="padding:10px;background:#2563eb;color:white;border-radius:8px;text-decoration:none;font-weight:600;text-align:center;">👮 Search Police on Google Maps</a>' +
+        '<a href="https://www.google.com/maps/search/fire+station/@' + lat + ',' + lng + ',13z" target="_blank" style="padding:10px;background:#ea580c;color:white;border-radius:8px;text-decoration:none;font-weight:600;text-align:center;">🚒 Search Fire Stations on Google Maps</a>' +
+        '</div>';
+      document.getElementById('szCards').innerHTML = html;
+    }
+  </script>
+</body>
+</html>

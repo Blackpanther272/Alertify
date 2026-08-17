@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n="adminLoginTitle">Admin Registration — Disaster Management System</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" />
+ <style>
+    .auth-card { 
+      background: white; 
+      width: 820px; 
+      max-width: 95%; 
+      margin: 36px auto; 
+      padding: 36px 40px 30px; 
+      border-radius: 24px; 
+      box-shadow: 0 20px 60px rgba(0,0,0,0.2); 
+      text-align: center; 
+    }
+    .auth-card h2 { margin: 0 0 4px; font-size: 24px; font-weight: 700; color: #1e293b; }
+    .auth-card p.subtitle { color: #64748b; font-size: 13.5px; margin: 0 0 24px; }
+    
+    .form-grid-2col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 28px;
+      text-align: left;
+    }
+    
+    .auth-card input, .auth-card select, .auth-card textarea { 
+      display: block; 
+      width: 100%; 
+      padding: 12px 14px; 
+      margin: 0 0 14px; 
+      border: 1.5px solid #e2e8f0; 
+      border-radius: 10px; 
+      font-size: 13.5px; 
+      font-family: inherit; 
+      box-sizing: border-box; 
+      transition: border-color 0.2s, box-shadow 0.2s; 
+      background: white; 
+    }
+    .auth-card input:focus, .auth-card select:focus, .auth-card textarea:focus { 
+      outline: none; 
+      border-color: #7c3aed; 
+      box-shadow: 0 0 0 3px rgba(124,58,237,0.1);
+    }
+    
+    .name-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; }
+    .loc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+    
+    .password-wrapper { position: relative; margin: 0 0 6px; }
+    .password-wrapper input { margin: 0; padding-right: 40px; }
+    .password-wrapper span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; user-select: none; }
+    
+    .hint-red { font-size: 11.5px; color: #ef4444; margin: 4px 0 14px; text-align: left; line-height: 1.4; }
+    
+    .btn-main { 
+      width: 100%; 
+      padding: 14px; 
+      background: linear-gradient(135deg, #7c3aed, #6d28d9); 
+      color: white; 
+      border: none; 
+      border-radius: 12px; 
+      font-size: 15px; 
+      font-weight: 700; 
+      cursor: pointer; 
+      margin-top: 14px; 
+      transition: all 0.3s ease; 
+      font-family: inherit; 
+    }
+    .btn-main:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(124,58,237,0.35); }
+    
+    .auth-links { margin-top: 20px; font-size: 13px; color: #64748b; }
+    .auth-links a { color: #7c3aed; text-decoration: none; font-weight: 600; }
+    
+    .role-badge { display: inline-block; background: #f5f3ff; color: #6d28d9; font-size: 11px; font-weight: 800; padding: 4px 12px; border-radius: 20px; margin-bottom: 12px; }
+    .section-label { font-size: 11.5px; font-weight: 700; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.6px; text-align: left; margin: 4px 0 10px; }
+    
+    .secret-box { background: #fdf4ff; border: 1.5px solid #c084fc; border-radius: 12px; padding: 14px; margin: 0 0 8px; }
+    .secret-box p { font-size: 12px; color: #7e22ce; margin: 0 0 10px; text-align: left; font-weight: 600; }
+    
+    @media (max-width: 800px) {
+      .auth-card { width: 95%; margin: 16px auto; padding: 24px 18px; }
+      .form-grid-2col { grid-template-columns: 1fr; gap: 0; }
+    }
+  </style>
+  <script src="i18n.js"></script>
+</head>
+<body>
+
+<div class="auth-card">
+  <span class="role-badge">🛡️ ADMIN REGISTRATION</span>
+  <h2>Admin Account Setup</h2>
+  <p class="subtitle">Create a command center administrator account</p>
+
+  <div class="form-grid-2col">
+    
+    <!-- 👈 LEFT COLUMN: Identity & Location -->
+    <div>
+      <div class="section-label">1. Personal & Contact Details</div>
+      <div class="name-grid">
+        <input type="text" id="adminFirstName" placeholder="First Name *" required />
+        <input type="text" id="adminMiddleName" placeholder="Middle" />
+        <input type="text" id="adminLastName" placeholder="Last Name *" required />
+      </div>
+     <div style="display: flex; gap: 8px; margin-bottom: 14px;">
+  <input type="email" id="adminEmail" placeholder="Official Email Address *" required autocomplete="email" style="margin-bottom:0;" />
+  <button type="button" id="sendOtpBtn" onclick="sendRegisterEmailOtp()" style="white-space: nowrap; padding: 0 16px; background: #7c3aed; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 13px;">Send OTP</button>
+</div>
+<input type="text" id="adminRegOtp" placeholder="Enter 6-Digit Email OTP *" maxlength="6" inputmode="numeric" required />
+      <input type="text" id="adminMobile" placeholder="10-Digit Mobile Number *" maxlength="10" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required />
+
+      <div class="section-label" style="margin-top:8px;">2. Jurisdiction & Office Address</div>
+      <div class="loc-grid">
+        <select id="adminState" required><option value="">🗺️ State *</option></select>
+        <select id="adminDistrict" required><option value="">📍 District *</option></select>
+      </div>
+      <textarea id="adminAddress" placeholder="Official Office Address *" rows="2" style="resize:none;" required></textarea>
+    </div>
+
+    <!-- 👉 RIGHT COLUMN: Security & Secret Key -->
+    <div>
+      <div class="section-label">3. Set Password</div>
+      <div class="password-wrapper">
+        <input type="password" id="adminPass" placeholder="Password *" autocomplete="new-password" />
+        <span onclick="togglePass('adminPass', this)">👁</span>
+      </div>
+      <p class="hint-red">Min 8 chars — uppercase, lowercase, number & special character</p>
+
+      <div class="password-wrapper">
+        <input type="password" id="adminCpass" placeholder="Confirm Password *" autocomplete="new-password" />
+        <span onclick="togglePass('adminCpass', this)">👁</span>
+      </div>
+
+      <div class="section-label" style="margin-top:10px;">4. System Authorization</div>
+      <div class="secret-box">
+        <p>🔑 Enter the Root Admin Secret Key:</p>
+        <div class="password-wrapper" style="margin:0;">
+          <input type="password" id="secretKey" placeholder="Enter System Secret Key *" />
+          <span onclick="togglePass('secretKey', this)">👁</span>
+        </div>
+      </div>
+
+      <button class="btn-main" onclick="doAdminRegister()">🛡️ Create Admin Account</button>
+    </div>
+
+  </div>
+
+  <div class="auth-links">
+    <span>Already registered? <a href="admin-login.html">Admin Login →</a></span>
+    <span style="margin: 0 8px; color:#cbd5e1;">|</span>
+    <span>Citizen portal? <a href="user-login.html">← User Login</a></span>
+  </div>
+</div>
+
+<script>
+ const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const BASE_URL = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+
+const stateSelect = document.getElementById("adminState");
+const districtSelect = document.getElementById("adminDistrict");
+// Safely resolve translations even if the dictionary layer drops
+function safeTranslate(key, defaultFallback) {
+  if (typeof t === "function") {
+    try { return t(key); } catch(e) { }
+  }
+  return defaultFallback;
+}
+async function sendRegisterEmailOtp() {
+  const email = document.getElementById("adminEmail").value.trim();
+  if (!email || !email.includes("@")) {
+    alert("Please enter a valid email address first.");
+    return;
+  }
+
+  const btn = document.getElementById("sendOtpBtn");
+  btn.disabled = true;
+  btn.textContent = "Sending...";
+
+  try {
+    const res = await fetch(`${BASE_URL}/admin/send-register-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email })
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      alert("❌ " + (data.message || "Failed to send OTP."));
+      btn.disabled = false;
+      btn.textContent = "Send OTP";
+      return;
+    }
+    alert("✅ 6-digit OTP sent to " + email);
+    btn.textContent = "Sent ✓";
+    document.getElementById("adminRegOtp").focus();
+  } catch (e) {
+    alert("Server connection error.");
+    btn.disabled = false;
+    btn.textContent = "Send OTP";
+  }
+}
+
+
+async function doAdminRegister() {
+  const firstName = document.getElementById("adminFirstName").value.trim();
+  const middleName = document.getElementById("adminMiddleName").value.trim();
+  const lastName = document.getElementById("adminLastName").value.trim();
+  const email = document.getElementById("adminEmail").value.trim();
+  const mobileInput = document.getElementById("adminMobile").value;
+  const mobile = mobileInput.trim().replace(/\D/g, '');
+  const pass = document.getElementById("adminPass").value;
+  const otp = document.getElementById("adminRegOtp").value.trim();
+  const state = stateSelect.value.trim();
+const district = districtSelect.value.trim();
+const address = document.getElementById("adminAddress").value.trim();
+const fullName = `${firstName} ${middleName ? middleName + " " : ""}${lastName}`.trim();
+  const cpass = document.getElementById("adminCpass").value;
+  const secretKey = document.getElementById("secretKey").value.trim();
+
+  if (!firstName || !lastName) { alert(safeTranslate("userRegErrName", "Please enter your name.")); return; }
+  if (!email || !email.includes("@")) { alert(safeTranslate("userRegErrEmail", "Please enter a valid email address.")); return; }
+  if (mobile.length !== 10) { alert(safeTranslate("userRegErrMobile", "Please enter a valid 10-digit mobile number.")); return; } 
+  if (!state || !district || !address) { alert("Please complete state, district, and address details."); return; }
+  if (!pass) { alert(safeTranslate("userRegErrPassword", "Please enter a password.")); return; }
+  if (otp.length !== 6) { alert("Please enter the 6-digit verification OTP sent to your email."); return; }
+
+  const pwRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+  if (!pwRegex.test(pass)) { alert(safeTranslate("userRegErrPassword", "Password criteria not met.")); return; }
+  if (pass !== cpass) { alert(safeTranslate("userRegErrMatch", "Passwords do not match.")); return; }
+  if (!secretKey) { alert("Please enter the Admin Secret Key."); return; }
+
+  try {
+const res = await fetch(`${BASE_URL}/admin/register`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+   body: JSON.stringify({ name: fullName, firstName, middleName, lastName, email, mobile, state, district, address, password: pass, secretKey, otp })
+  });
+    const data = await res.json();
+
+    if (!res.ok) {
+      let msg = "❌ " + (data.message || "Registration failed.");
+      if (data.adminId) { msg += "\n\nAdmin ID: " + data.adminId; }
+      alert(msg);
+      return;
+    }
+
+    alert("✅ Admin account created!\n\nYour Admin ID: " + data.adminId + "\n\nSave this ID — you need it to login.");
+    window.location.href = "admin-login.html";
+
+  } catch (e) {
+    alert(safeTranslate("userLoginErrServer", "Internal server connection failure."));
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  // Bind form submission to both final checking inputs to ensure flawless user submission loops
+  const triggerFields = ["adminCpass", "secretKey"];
+  triggerFields.forEach(id => {
+    const targetElement = document.getElementById(id);
+    if (targetElement) {
+      targetElement.addEventListener("keypress", function(e) {
+        if (e.key === "Enter") doAdminRegister();
+      });
+    }
+  });
+});
+
+function togglePass(id, icon) {
+  const f = document.getElementById(id);
+  if (f.type === "password") { f.type = "text"; icon.textContent = "🙈"; }
+  else { f.type = "password"; icon.textContent = "👁"; }
+}
+
+
+async function loadStates() {
+  try {
+    const res = await fetch(`${BASE_URL}/states`);
+    const states = await res.json();
+    stateSelect.innerHTML = '<option value="">🗺️ Select State *</option>';
+    if (Array.isArray(states)) {
+      states.forEach(st => {
+        stateSelect.innerHTML += `<option value="${st.name}" data-id="${st.id || st.iso2 || ''}">${st.name}</option>`;
+      });
+    }
+  } catch (err) {
+    console.error("Failed to load states:", err);
+    stateSelect.innerHTML = '<option value="">❌ Failed to load states</option>';
+  }
+}
+
+stateSelect.addEventListener("change", async function () {
+  districtSelect.innerHTML = '<option value="">⏳ Loading districts...</option>';
+  if (!this.value) { districtSelect.innerHTML = '<option value="">📍 Select District *</option>'; return; }
+  const selectedOpt = this.options[this.selectedIndex];
+  const stateId = selectedOpt.getAttribute("data-id") || "";
+  const res = await fetch(`${BASE_URL}/districts?state=${encodeURIComponent(this.value)}&stateId=${stateId}`);
+  const districts = await res.json();
+  districtSelect.innerHTML = '<option value="">📍 Select District *</option>';
+  if (Array.isArray(districts) && districts.length > 0) {
+    districts.forEach(d => {
+      const dName = d.name || d;
+      districtSelect.innerHTML += `<option value="${dName}">${dName}</option>`;
+    });
+  }
+});
+document.addEventListener("DOMContentLoaded", loadStates);
+</script>
+</body>
+</html>

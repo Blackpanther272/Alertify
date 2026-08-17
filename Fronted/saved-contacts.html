@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emergency & Saved Contacts | Disaster Management</title>
+  <link rel="stylesheet" href="style.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+  <style>
+    body { font-family:'Poppins',sans-serif; margin:0; color:#1e293b; background:linear-gradient(-45deg,#93c5fd,#bfdbfe,#e0f2fe,#60a5fa); background-size:400% 400%; animation:bgMove 12s ease infinite; min-height:100vh; display:flex; flex-direction:column; align-items:center; }
+    @keyframes bgMove { 0%{background-position:0% 50%} 50%{background-position:100% 50%} 100%{background-position:0% 50%} }
+    header { width:100%; background:linear-gradient(135deg,#0f172a,#1e293b); color:white; padding:18px; text-align:center; font-size:22px; font-weight:600; box-shadow:0 8px 25px rgba(0,0,0,0.3); }
+    .container { width:100%; max-width:650px; margin:30px auto; background:white; padding:30px; border-radius:20px; box-shadow:0 25px 70px rgba(0,0,0,0.25); box-sizing:border-box; }
+    .back-btn { display:inline-block; margin-bottom:20px; background:#f1f5f9; color:#475569; padding:8px 14px; border-radius:8px; text-decoration:none; font-size:14px; font-weight:600; }
+    .section-title { font-size:16px; font-weight:700; color:#1565c0; margin:24px 0 12px; border-bottom:2px solid #e2e8f0; padding-bottom:6px; }
+    .contact-card { display:flex; align-items:center; justify-content:space-between; padding:12px 16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:10px; }
+    .call-btn { background:#16a34a; color:white; padding:8px 16px; border-radius:8px; text-decoration:none; font-weight:700; font-size:13px; display:flex; align-items:center; gap:6px; box-shadow:0 4px 12px rgba(22,163,74,0.3); }
+    .delete-btn { background:#fee2e2; color:#dc2626; border:none; padding:8px 10px; border-radius:8px; cursor:pointer; font-weight:bold; font-size:13px; }
+    footer { margin-top:auto; padding:20px; font-size:14px; color:#334155; }
+    @media(max-width:480px) { .container { width:94vw; padding:20px 12px; } }
+  </style>
+</head>
+<body>
+
+  <!-- Global Theme Toggle -->
+  <button id="themeToggle" class="global-theme-btn" title="Toggle Theme">🌙</button>
+
+  <header>
+    <span>🚨 Emergency & Important Contacts</span>
+  </header>
+
+  <div class="container">
+    <a href="index.html" class="back-btn">← Back to Dashboard</a>
+    <h2 style="color:#0f172a; margin-top:0; margin-bottom:6px;">All Emergency Numbers</h2>
+    <p style="color:#64748b; font-size:13px; margin-bottom:10px;">Access national disaster response forces and your personal saved contacts instantly with direct dial support.</p>
+
+    <!-- OFFICIAL DISASTER FORCES (Cannot be deleted) -->
+    <div class="section-title">🛡️ Official Disaster & Emergency Forces</div>
+    <div id="officialContactsList">
+      <div class="contact-card">
+        <div><strong>National Emergency Number (All-in-One)</strong><br><span style="font-size:13px; color:#64748b; font-family:monospace;">112</span></div>
+        <a href="tel:112" class="call-btn">📞 Call</a>
+      </div>
+      <div class="contact-card">
+        <div><strong>NDRF (National Disaster Response Force)</strong><br><span style="font-size:13px; color:#64748b; font-family:monospace;">011-24363260 / 1078</span></div>
+        <a href="tel:1078" class="call-btn">📞 Call</a>
+      </div>
+      <div class="contact-card">
+        <div><strong>ODRF (Odisha Disaster Rapid Action Force)</strong><br><span style="font-size:13px; color:#64748b; font-family:monospace;">0674-2561535</span></div>
+        <a href="tel:06742561535" class="call-btn">📞 Call</a>
+      </div>
+      <div class="contact-card">
+        <div><strong>SDRF / State Emergency Operation Center</strong><br><span style="font-size:13px; color:#64748b; font-family:monospace;">1070</span></div>
+        <a href="tel:1070" class="call-btn">📞 Call</a>
+      </div>
+      <div class="contact-card">
+        <div><strong>Police Control Room</strong><br><span style="font-size:13px; color:#64748b; font-family:monospace;">100</span></div>
+        <a href="tel:100" class="call-btn">📞 Call</a>
+      </div>
+      <div class="contact-card">
+        <div><strong>Fire & Rescue Station</strong><br><span style="font-size:13px; color:#64748b; font-family:monospace;">101</span></div>
+        <a href="tel:101" class="call-btn">📞 Call</a>
+      </div>
+      <div class="contact-card">
+        <div><strong>Ambulance / Medical Emergency</strong><br><span style="font-size:13px; color:#64748b; font-family:monospace;">102 / 108</span></div>
+        <a href="tel:102" class="call-btn">📞 Call</a>
+      </div>
+    </div>
+
+    <!-- USER SAVED CONTACTS (User can delete their own) -->
+    <div class="section-title">👤 Your Personal Saved Contacts</div>
+    <div id="userSavedContactsList"></div>
+  </div>
+
+  <footer>
+    <span>© 2026 Disaster Management System</span>
+  </footer>
+
+  <script>
+    function renderUserContacts() {
+      const listContainer = document.getElementById("userSavedContactsList");
+      const savedContacts = JSON.parse(localStorage.getItem("emergencyContacts")) || [];
+
+      if (savedContacts.length === 0) {
+        listContainer.innerHTML = `
+          <div style="text-align:center; padding:20px; color:#94a3b8; background:#f8fafc; border-radius:12px; border:1px dashed #cbd5e1;">
+            <p style="font-size:14px; margin:0 0 4px;">No personal contacts added yet.</p>
+            <p style="font-size:12px; margin:0;">Use the <strong>+ Add</strong> button on your dashboard to save custom numbers here.</p>
+          </div>
+        `;
+        return;
+      }
+
+      let html = "";
+      savedContacts.forEach((c, index) => {
+        let cleanNum = String(c.number).replace(/\D/g, "");
+        html += `
+          <div class="contact-card">
+            <div>
+              <strong style="font-size:14px; color:#1e293b; display:block; margin-bottom:2px;">${c.name}</strong>
+              <span style="font-size:13px; color:#64748b; font-family:monospace;">${c.number}</span>
+            </div>
+            <div style="display:flex; gap:8px; align-items:center;">
+              <a href="tel:${cleanNum}" class="call-btn">📞 Call</a>
+              <button onclick="deleteContactItem(${index})" class="delete-btn" title="Delete Saved Contact">🗑️</button>
+            </div>
+          </div>
+        `;
+      });
+      listContainer.innerHTML = html;
+    }
+
+    function deleteContactItem(index) {
+      if (confirm("Are you sure you want to delete this contact?")) {
+        let savedContacts = JSON.parse(localStorage.getItem("emergencyContacts")) || [];
+        savedContacts.splice(index, 1);
+        localStorage.setItem("emergencyContacts", JSON.stringify(savedContacts));
+        renderUserContacts();
+      }
+    }
+
+    window.addEventListener("DOMContentLoaded", renderUserContacts);
+  </script>
+  <script src="theme.js"></script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="weatherTitle">Disaster Management - Live Weather</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="weather.css">
+</head>
+<body>
+
+<!-- NAV -->
+
+<!-- ── LOCATION OVERLAY (same pattern as map.js / Safezones.html) ── -->
+<div id="wLocOverlay" style="position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(15,23,41,0.97);z-index:1000;display:flex;align-items:center;justify-content:center;padding:16px;">
+  <div style="background:#1a2540;border:1.5px solid #2a3a5c;border-radius:16px;padding:32px 24px;max-width:400px;width:100%;text-align:center;">
+    <div style="font-size:52px;margin-bottom:12px;">🌤️</div>
+    <h3 style="font-size:18px;font-weight:700;color:#e8edf5;margin-bottom:8px;">Live Weather Near You</h3>
+    <p style="font-size:13px;color:#7b8db0;margin-bottom:20px;line-height:1.6;">Allow GPS to show real weather, AQI, and disaster alerts for your exact location — not a city 100 km away.</p>
+    <button id="wAllowBtn" onclick="startWeather()"
+      style="background:linear-gradient(135deg,#4a9eff,#2563eb);color:white;border:none;padding:13px 32px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;width:100%;margin-bottom:10px;">
+      📍 Allow Location & Load Weather
+    </button>
+    <p id="wLocErr" style="color:#ef4444;font-size:12px;margin-bottom:14px;display:none;line-height:1.6;"></p>
+
+    <!-- Village search -->
+    <div style="margin-top:16px;padding-top:16px;border-top:1px solid #2a3a5c;">
+      <p style="font-size:12px;color:#7b8db0;margin-bottom:8px;">📶 GPS slow? Search your village instead:</p>
+      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+        <input id="wVillageInput" placeholder="e.g. Bindipur Puri"
+          onkeydown="if(event.key==='Enter') searchWeatherVillage(this.value)"
+          style="padding:9px 12px;border:1.5px solid #2a3a5c;border-radius:8px;font-size:13px;width:190px;background:#0f1729;color:#e8edf5;outline:none;" />
+        <button id="wVillageSearchBtn" onclick="searchWeatherVillage(document.getElementById('wVillageInput').value)"
+          style="padding:9px 14px;background:#7c3aed;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;">🔍 Search</button>
+      </div>
+      <p style="font-size:11px;color:#475569;margin-top:6px;">OpenStreetMap — free, no account needed</p>
+    </div>
+  </div>
+</div>
+
+<nav style="display:flex; justify-content:space-between; align-items:center;">
+  <div class="nav-brand">🛡️&nbsp;<span data-i18n="appName">Disaster Management System</span></div>
+  <a href="index.html" style="color:#93c5fd; text-decoration:none; font-size:14px; font-weight:600;">← Back to Dashboard</a>
+</nav>
+
+<!-- HEATWAVE BANNER -->
+<div class="hw-banner" id="hw-banner" style="display:none;">
+  <div class="hw-left">
+    <span class="hw-icon">🌡️</span>
+    <span id="hw-text" data-i18n="weatherHeat">Heatwave Warning: High temperature expected tomorrow. Stay hydrated!</span>
+  </div>
+  <button class="hw-btn" data-i18n="viewDetails">View Details</button>
+</div>
+
+<div class="main">
+
+  <!-- TOP ROW: WEATHER CARD + STATS -->
+  <div class="top-row">
+
+    <!-- WEATHER CARD -->
+    <div class="weather-card">
+      <div class="loc-row">
+        <span class="loc-icon">📍</span>
+        <span class="loc-name" id="loc-name"><span class="spinner"></span>&nbsp;<span data-i18n="loading">Detecting location...</span></span>
+      </div>
+      <div class="updated" id="updated-time">—</div>
+      <div class="temp-row">
+        <div class="wx-icon-big" id="wx-icon-big">🌤️</div>
+        <div class="temp-block">
+          <div class="main-temp" id="main-temp">—°C</div>
+          <div class="feels" id="feels-like"><span data-i18n="feelsLike">Feels like</span> —°</div>
+        </div>
+      </div>
+      <div class="wx-desc" id="wx-desc" data-i18n="loading">Fetching weather data...</div>
+      <div class="umbrella-tip" id="wx-tip"></div>
+    </div>
+
+    <!-- STATS CARD -->
+    <div class="stats-card">
+      <div class="stat-row">
+        <div class="stat-left"><span class="stat-ico">💧</span><span data-i18n="weatherHumidity">Humidity</span></div>
+        <span class="stat-val" id="stat-humidity">—</span>
+      </div>
+      <div class="stat-row">
+        <div class="stat-left"><span class="stat-ico">💨</span><span data-i18n="weatherWind">Wind Speed</span></div>
+        <span class="stat-val" id="stat-wind">—</span>
+      </div>
+      <div class="stat-row">
+        <div class="stat-left"><span class="stat-ico">🔵</span><span data-i18n="weatherPressure">Pressure</span></div>
+        <span class="stat-val" id="stat-pressure">—</span>
+      </div>
+      <div class="stat-row">
+        <div class="stat-left"><span class="stat-ico">👁️</span><span data-i18n="weatherVis">Visibility</span></div>
+        <span class="stat-val" id="stat-visibility">—</span>
+      </div>
+      <div class="stat-row">
+        <div class="stat-left"><span class="stat-ico">☁️</span><span data-i18n="weatherCloud">Cloud Cover</span></div>
+        <span class="stat-val" id="stat-cloud">—</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- 7-DAY FORECAST -->
+  <div class="forecast-card">
+    <div class="section-title" data-i18n="forecastTitle7">7-Day Forecast</div>
+    <div class="forecast-grid" id="forecast-grid">
+      <div class="fc-day today loading-pulse"><div class="fc-label" data-i18n="today">Today</div><div class="fc-ico">🌤️</div><div class="fc-hi">—°</div><div class="fc-lo">—°</div><div class="fc-rain">—%</div></div>
+      <div class="fc-day loading-pulse"><div class="fc-label">—</div><div class="fc-ico">🌤️</div><div class="fc-hi">—°</div><div class="fc-lo">—°</div><div class="fc-rain">—%</div></div>
+      <div class="fc-day loading-pulse"><div class="fc-label">—</div><div class="fc-ico">🌤️</div><div class="fc-hi">—°</div><div class="fc-lo">—°</div><div class="fc-rain">—%</div></div>
+      <div class="fc-day loading-pulse"><div class="fc-label">—</div><div class="fc-ico">🌤️</div><div class="fc-hi">—°</div><div class="fc-lo">—°</div><div class="fc-rain">—%</div></div>
+      <div class="fc-day loading-pulse"><div class="fc-label">—</div><div class="fc-ico">🌤️</div><div class="fc-hi">—°</div><div class="fc-lo">—°</div><div class="fc-rain">—%</div></div>
+      <div class="fc-day loading-pulse"><div class="fc-label">—</div><div class="fc-ico">🌤️</div><div class="fc-hi">—°</div><div class="fc-lo">—°</div><div class="fc-rain">—%</div></div>
+      <div class="fc-day loading-pulse"><div class="fc-label">—</div><div class="fc-ico">🌤️</div><div class="fc-hi">—°</div><div class="fc-lo">—°</div><div class="fc-rain">—%</div></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM ROW: ALERTS + AQI -->
+  <div class="bottom-row">
+
+    <!-- DISASTER ALERTS -->
+    <div class="alerts-card">
+      <div class="section-title" data-i18n="weatherAlerts">Disaster Alerts</div>
+      <div id="alerts-container">
+        <div class="alert-item alert-storm" id="alert-storm" style="display:none;">
+          <div class="alert-left">
+            <div class="alert-ico">⚡</div>
+            <div class="alert-text">
+              <h4 data-i18n="alertStormTitle">Thunderstorm Alert</h4>
+              <p data-i18n="alertStormDesc">Thunderstorm with lightning expected in your area.</p>
+            </div>
+          </div>
+          <span class="risk-badge risk-high" data-i18n="highRisk">High Risk</span>
+        </div>
+        <div class="alert-item alert-rain" id="alert-rain" style="display:none;">
+          <div class="alert-left">
+            <div class="alert-ico">🌧️</div>
+            <div class="alert-text">
+              <h4 data-i18n="alertRainTitle">Heavy Rain Warning</h4>
+              <p id="rain-sub" data-i18n="alertRainDesc">Heavy rainfall expected in next 2 hours.</p>
+            </div>
+          </div>
+          <span class="risk-badge risk-med" data-i18n="medRisk">Medium Risk</span>
+        </div>
+        <div class="alert-item alert-heat" id="alert-heat" style="display:none;">
+          <div class="alert-left">
+            <div class="alert-ico">🌡️</div>
+            <div class="alert-text">
+              <h4 data-i18n="alertHeatTitle">Heatwave Warning</h4>
+              <p id="heat-sub" data-i18n="alertHeatDesc">Temperature may reach high tomorrow.</p>
+            </div>
+          </div>
+          <span class="risk-badge risk-med" data-i18n="medRisk">Medium Risk</span>
+        </div>
+        <div class="alert-item alert-clear" id="alert-clear">
+          <div class="alert-left">
+            <div class="alert-ico">✅</div>
+            <div class="alert-text">
+              <h4 data-i18n="alertClearTitle">All Clear</h4>
+              <p data-i18n="alertClearDesc">No major alerts at the moment.</p>
+            </div>
+          </div>
+          <span class="risk-badge risk-low" data-i18n="lowRisk">Low Risk</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- AIR QUALITY INDEX -->
+    <div class="aqi-card">
+      <div class="section-title" data-i18n="aqiTitle">Air Quality Index</div>
+      <div class="aqi-center">
+        <div class="aqi-num" id="aqi-num">—</div>
+        <div class="aqi-label" id="aqi-cat" data-i18n="loading">Loading...</div>
+      </div>
+      <div class="aqi-gauge">
+        <div class="aqi-needle" id="aqi-needle" style="left:30%;"></div>
+      </div>
+      <div class="pollutants">
+        <div class="poll-item"><span class="poll-name">PM2.5</span><span class="poll-val" id="pm25">—</span></div>
+        <div class="poll-item"><span class="poll-name">PM10</span><span class="poll-val" id="pm10">—</span></div>
+        <div class="poll-item"><span class="poll-name">O3</span><span class="poll-val" id="o3">—</span></div>
+        <div class="poll-item"><span class="poll-name">NO2</span><span class="poll-val" id="no2">—</span></div>
+        <div class="poll-item"><span class="poll-name">SO2</span><span class="poll-val" id="so2">—</span></div>
+        <div class="poll-item"><span class="poll-name">CO</span><span class="poll-val" id="co">—</span></div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- TODAY'S HIGHLIGHTS -->
+  <div class="highlights-card">
+    <div class="section-title" data-i18n="highlightsTitle">Today's Highlights</div>
+    <div class="highlights-grid">
+      <div class="hl-item"><div class="hl-ico">🌡️</div><div class="hl-label" data-i18n="hlMaxTemp">Max Temp</div><div class="hl-val" id="hl-max">—°C</div></div>
+      <div class="hl-item"><div class="hl-ico">🔵</div><div class="hl-label" data-i18n="hlMinTemp">Min Temp</div><div class="hl-val" id="hl-min">—°C</div></div>
+      <div class="hl-item"><div class="hl-ico">🌧️</div><div class="hl-label" data-i18n="hlRainfall">Rainfall</div><div class="hl-val" id="hl-rain">— mm</div></div>
+      <div class="hl-item"><div class="hl-ico">💧</div><div class="hl-label" data-i18n="hlHumidity">Humidity</div><div class="hl-val" id="hl-humidity">—%</div></div>
+      <div class="hl-item"><div class="hl-ico">💨</div><div class="hl-label" data-i18n="hlWind">Wind</div><div class="hl-val" id="hl-wind">— km/h</div></div>
+      <div class="hl-item"><div class="hl-ico">🌅</div><div class="hl-label" data-i18n="hlSunrise">Sunrise</div><div class="hl-val" id="hl-sunrise">—</div></div>
+    </div>
+  </div>
+
+</div><!-- end .main -->
+
+<footer>
+  <span data-i18n="copyright">© 2026 Disaster Management System | All rights reserved</span>
+  <div class="footer-right"><span class="shield">🛡️</span> <span data-i18n="footerTagline">Stay Safe, Stay Prepared</span></div>
+</footer>
+
+<script src="weather.js"></script>
+<script src="i18n.js"></script>
+
+<!-- Merge weather-specific i18n keys -->
+<script>
+window.addEventListener('load', () => {
+  if(typeof TRANSLATIONS === 'undefined') return;
+  const wx = {
+    en:{ navLiveInfo:'Live Info', navWeather:'Weather', navAlerts:'Alerts', navHistory:'History',
+         viewDetails:'View Details', feelsLike:'Feels like', weatherVis:'Visibility', weatherCloud:'Cloud Cover',
+         forecastTitle7:'7-Day Forecast', today:'Today',
+         alertStormTitle:'Thunderstorm Alert', alertStormDesc:'Thunderstorm with lightning expected in your area.',
+         alertRainTitle:'Heavy Rain Warning', alertRainDesc:'Heavy rainfall expected in next 2 hours.',
+         alertHeatTitle:'Heatwave Warning', alertHeatDesc:'Temperature may reach high tomorrow.',
+         alertClearTitle:'All Clear', alertClearDesc:'No major alerts at the moment.',
+         highRisk:'High Risk', medRisk:'Medium Risk', lowRisk:'Low Risk',
+         aqiTitle:'Air Quality Index', highlightsTitle:"Today's Highlights",
+         hlMaxTemp:'Max Temp', hlMinTemp:'Min Temp', hlRainfall:'Rainfall',
+         hlHumidity:'Humidity', hlWind:'Wind', hlSunrise:'Sunrise',
+         footerTagline:'Stay Safe, Stay Prepared' },
+    hi:{ navLiveInfo:'लाइव जानकारी', navWeather:'मौसम', navAlerts:'अलर्ट', navHistory:'इतिहास',
+         viewDetails:'विवरण देखें', feelsLike:'महसूस होता है', weatherVis:'दृश्यता', weatherCloud:'बादल',
+         forecastTitle7:'7-दिन का पूर्वानुमान', today:'आज',
+         alertStormTitle:'तूफान अलर्ट', alertStormDesc:'आपके क्षेत्र में बिजली के साथ तूफान की संभावना।',
+         alertRainTitle:'भारी बारिश चेतावनी', alertRainDesc:'अगले 2 घंटों में भारी बारिश की संभावना।',
+         alertHeatTitle:'हीटवेव चेतावनी', alertHeatDesc:'कल तापमान बहुत अधिक हो सकता है।',
+         alertClearTitle:'सब ठीक', alertClearDesc:'अभी कोई बड़ा अलर्ट नहीं।',
+         highRisk:'उच्च जोखिम', medRisk:'मध्यम जोखिम', lowRisk:'कम जोखिम',
+         aqiTitle:'वायु गुणवत्ता सूचकांक', highlightsTitle:'आज की मुख्य बातें',
+         hlMaxTemp:'अधिकतम तापमान', hlMinTemp:'न्यूनतम तापमान', hlRainfall:'वर्षा',
+         hlHumidity:'आर्द्रता', hlWind:'हवा', hlSunrise:'सूर्योदय',
+         footerTagline:'सुरक्षित रहें, तैयार रहें' },
+    or:{ navLiveInfo:'ଲାଇଭ ତଥ୍ୟ', navWeather:'ପାଣିପାଗ', navAlerts:'ସତର୍କତା', navHistory:'ଇତିହାସ',
+         viewDetails:'ବିବରଣ ଦେଖନ୍ତୁ', feelsLike:'ଅନୁଭୂତ', weatherVis:'ଦୃଶ୍ୟତା', weatherCloud:'ମେଘ',
+         forecastTitle7:'7-ଦିନ ପୂର୍ବାନୁମାନ', today:'ଆଜି',
+         alertStormTitle:'ଝଡ ସତର୍କତା', alertStormDesc:'ଆପଣଙ୍କ ଅଞ୍ଚଳରେ ଝଡ ଓ ଭୁ ବଜ୍ରପାତ।',
+         alertRainTitle:'ଭାରି ବର୍ଷା ଚେତାବନୀ', alertRainDesc:'ଆଗାମୀ 2 ଘଣ୍ଟାରେ ଭାରି ବର୍ଷା।',
+         alertHeatTitle:'ଉଷ୍ଣ ଲହଡ ଚେତାବନୀ', alertHeatDesc:'କାଲି ତାପମାତ୍ରା ଅଧିକ ହୋଇ ପାରେ।',
+         alertClearTitle:'ସବୁ ଠିକ', alertClearDesc:'ଏବେ କୌଣସି ବଡ ସତର୍କତା ନାହିଁ।',
+         highRisk:'ଉଚ୍ଚ ବିପଦ', medRisk:'ମଧ୍ୟମ ବିପଦ', lowRisk:'କମ ବିପଦ',
+         aqiTitle:'ବାୟୁ ଗୁଣ ସୂଚକ', highlightsTitle:'ଆଜିର ମୁଖ୍ୟ ବିଷୟ',
+         hlMaxTemp:'ସର୍ବଧିକ ତାପ', hlMinTemp:'ସର୍ବନିମ୍ନ ତାପ', hlRainfall:'ବର୍ଷା',
+         hlHumidity:'ଆର୍ଦ୍ରତା', hlWind:'ବାୟୁ', hlSunrise:'ସୂର୍ୟୋଦୟ',
+         footerTagline:'ସୁରକ୍ଷିତ ରୁହନ୍ତୁ, ପ୍ରସ୍ତୁତ ରୁହନ୍ତୁ' },
+    bn:{ navLiveInfo:'লাইভ তথ্য', navWeather:'আবহাওয়া', navAlerts:'সতর্কতা', navHistory:'ইতিহাস',
+         viewDetails:'বিস্তারিত দেখুন', feelsLike:'অনুভব হচ্ছে', weatherVis:'দৃশ্যমানতা', weatherCloud:'মেঘ',
+         forecastTitle7:'৭ দিনের পূর্বাভাস', today:'আজ',
+         alertStormTitle:'ঝড়ের সতর্কতা', alertStormDesc:'আপনার এলাকায় বজ্রঝড়ের সম্ভাবনা।',
+         alertRainTitle:'ভারী বৃষ্টির সতর্কতা', alertRainDesc:'পরের ২ ঘণ্টায় ভারী বৃষ্টি হতে পারে।',
+         alertHeatTitle:'তাপপ্রবাহ সতর্কতা', alertHeatDesc:'আগামীকাল তাপমাত্রা অনেক বেশি হতে পারে।',
+         alertClearTitle:'সব ঠিক আছে', alertClearDesc:'এই মুহূর্তে কোনো বড় সতর্কতা নেই।',
+         highRisk:'উচ্চ ঝুঁকি', medRisk:'মাঝারি ঝুঁকি', lowRisk:'কম ঝুঁকি',
+         aqiTitle:'বায়ু মান সূচক', highlightsTitle:'আজকের হাইলাইট',
+         hlMaxTemp:'সর্বোচ্চ তাপ', hlMinTemp:'সর্বনিম্ন তাপ', hlRainfall:'বৃষ্টিপাত',
+         hlHumidity:'আর্দ্রতা', hlWind:'বাতাস', hlSunrise:'সূর্যোদয়',
+         footerTagline:'নিরাপদ থাকুন, প্রস্তুত থাকুন' }
+  };
+  ['en','hi','or','bn'].forEach(l => { if(TRANSLATIONS[l]&&wx[l]) Object.assign(TRANSLATIONS[l],wx[l]); });
+  if(typeof applyLang==='function') applyLang();
+});
+</script>
+</body>
+</html>

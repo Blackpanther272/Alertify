@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n="adminLoginTitle">Admin Login — Disaster Management System</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>" />
+  <style>
+    /* Main Card Styles */
+   .auth-card { 
+  background: white; 
+  width: 390px; 
+  max-width: 92%; 
+  margin: 32px auto; 
+  padding: 24px 24px 20px; 
+  border-radius: 18px; 
+  box-shadow: 0 16px 40px rgba(0,0,0,0.22); 
+  text-align: center; 
+}
+.auth-card h2 { margin: 0 0 4px; font-size: 21px; font-weight: 700; color: #1e293b; }
+.auth-card p.subtitle { color: #64748b; font-size: 12px; margin: 0 0 14px; }
+.info-box { background: #f5f3ff; border-left: 3px solid #7c3aed; border-radius: 8px; padding: 8px 12px; margin: 0 0 14px; font-size: 11.5px; color: #4c1d95; text-align: left; line-height: 1.4; }
+.ngo-link-box { background: #eff6ff; border-radius: 10px; padding: 10px 12px; margin-top: 12px; font-size: 12px; color: #1e3a8a; text-align: left; }
+    .auth-card h2 { margin: 0 0 6px; font-size: 22px; font-weight: 700; color: #1e293b; }
+    .auth-card p.subtitle { color: #64748b; font-size: 13px; margin: 0 0 22px; }
+    .auth-card input { display: block; width: 100%; padding: 11px 14px; margin: 0 0 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; font-family: inherit; box-sizing: border-box; transition: border-color 0.2s; }
+    .auth-card input:focus { outline: none; border-color: #7c3aed; }
+    .password-wrapper { position: relative; margin: 0 0 6px; }
+    .password-wrapper input { margin: 0; padding-right: 40px; }
+    .password-wrapper span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; user-select: none; }
+    .hint-text { font-size: 11px; color: #7c3aed; margin: 0 0 14px; text-align: left; }
+    .btn-main { width: 100%; padding: 13px; background: linear-gradient(135deg, #7c3aed, #6d28d9); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin: 8px 0 0; transition: all 0.3s ease; font-family: inherit; }
+    .btn-main:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(124,58,237,0.35); }
+    .auth-links { margin-top: 18px; font-size: 13px; color: #64748b; }
+    .auth-links a { color: #7c3aed; text-decoration: none; font-weight: 600; }
+    .auth-links a:hover { text-decoration: underline; }
+    .role-badge { display: inline-block; background: #f5f3ff; color: #6d28d9; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-bottom: 14px; letter-spacing: 0.5px; }
+    .info-box { background: #f5f3ff; border-left: 3px solid #7c3aed; border-radius: 8px; padding: 10px 14px; margin: 0 0 18px; font-size: 12px; color: #4c1d95; text-align: left; line-height: 1.6; }
+    .divider { margin: 14px 0; border: none; border-top: 1px solid #f1f5f9; }
+    .ngo-link-box { background: #eff6ff; border-radius: 10px; padding: 12px 14px; margin-top: 16px; font-size: 13px; color: #1e3a8a; text-align: left; }
+    .ngo-link-box a { color: #2563eb; font-weight: 600; text-decoration: none; }
+    .ngo-link-box a:hover { text-decoration: underline; }
+
+    /* Popup Modal Styles */
+    .popup-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); z-index: 1000; align-items: center; justify-content: center; }
+    .popup-overlay.active { display: flex; }
+    .popup-box { background: white; width: 90%; max-width: 340px; padding: 24px; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.2); text-align: center; }
+    .popup-box h3 { margin: 0 0 16px; font-size: 18px; color: #1e293b; }
+    .popup-box input { display: block; width: 100%; padding: 11px 14px; margin: 0 0 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; box-sizing: border-box; }
+    .popup-box input:focus { outline: none; border-color: #7c3aed; }
+    .hidden { display: none !important; }
+    .popup-btn { width: 100%; padding: 12px; background: #7c3aed; color: white; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; margin-bottom: 12px; transition: background 0.2s; }
+    .popup-btn:hover { background: #6d28d9; }
+    .popup-cancel { font-size: 13px; color: #64748b; cursor: pointer; font-weight: 600; display: inline-block; padding: 4px; }
+    .popup-cancel:hover { color: #ef4444; }
+    .otp-input {
+  font-size: 24px !important;
+  letter-spacing: 8px;
+  text-align: center;
+  font-weight: 700;
+  padding: 10px !important;
+  border: 2px solid #cbd5e1 !important;
+}
+.resend-btn {
+  background: none;
+  border: none;
+  color: #7c3aed;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0;
+}
+.resend-btn:disabled {
+  color: #94a3b8;
+  cursor: not-allowed;
+}
+  </style>
+  <script src="i18n.js"></script>
+</head>
+<body>
+
+<div class="auth-card">
+  <span class="role-badge" data-i18n="adminLoginBadge">🛡️ ADMIN ACCESS</span>
+  <h2 data-i18n="adminLoginTitle">Admin Login</h2>
+  <p class="subtitle" data-i18n="adminLoginSubtitle">Disaster Management System — Control Panel</p>
+
+  <div class="info-box">
+    <span data-i18n="adminLoginInfo">🔐 Admin accounts are created by the system administrator.</span><br>
+    <span data-i18n="adminLoginInfoADM">Login using your Admin ID (starts with ADM) and your password.</span>
+  </div>
+
+  <input
+  type="text" id="adminId"
+  placeholder="Admin ID (ADM...) or Email"
+  autocomplete="username"
+/>
+
+  <div class="password-wrapper">
+    <input type="password" id="adminPass" placeholder="Password" data-i18n-placeholder="adminPassPlaceholder" autocomplete="current-password" />
+    <span onclick="togglePass('adminPass', this)">👁</span>
+  </div>
+  <p class="hint-text" data-i18n="adminLoginHint">Your Admin ID starts with ADM followed by digits.</p>
+
+  <button class="btn-main" onclick="doAdminLogin()" data-i18n="adminLoginBtn">🔐 Login as Admin</button>
+
+  <hr class="divider" />
+
+  <div class="auth-links">
+    <p style="margin:0 0 6px;"><span data-i18n="adminLoginCitizen">Are you a citizen?</span> <a href="user-login.html" data-i18n="adminLoginUserLink">← User Login</a></p>
+    <p style="margin:0 0 6px;">
+      <a href="#" onclick="openAdminForgot()">Forgot Password?</a>
+    </p>
+    <p style="margin:0;"><span data-i18n="adminLoginNewAdmin">New admin?</span> <a href="admin-register.html" data-i18n="adminLoginRegLink">Request Admin Access →</a></p>
+  </div>
+
+  <div class="ngo-link-box">
+    <strong data-i18n="adminLoginNgoBox">Are you an NGO?</strong><br>
+    <a href="ngo.html" data-i18n="adminLoginNgoLink">NGO Login / Register →</a>
+  </div>
+</div>
+
+<div class="popup-overlay" id="adminForgotPopup">
+  <div class="popup-box">
+    <h3>🔐 Reset Admin Password</h3>
+    
+    <input type="text" id="afAdminId" placeholder="Enter Admin ID (ADM...) or Email" />
+    <input type="text" id="afOtp" placeholder="Enter 6-Digit OTP" class="hidden" inputmode="numeric" oninput="this.value = this.value.replace(/[^0-9]/g, '')" maxlength="6" />
+    
+    <!-- New Password with Eye Icon -->
+    <div id="afPassWrapper" class="password-wrapper hidden" style="margin-bottom: 12px;">
+      <input type="password" id="afNewPass" placeholder="Enter New Password" style="margin: 0; padding-right: 40px;" />
+      <span onclick="togglePass('afNewPass', this)">👁</span>
+    </div>
+
+    <!-- Confirm Password without Eye Icon -->
+    <input type="password" id="afConfirmPass" placeholder="Confirm New Password" class="hidden" />
+    
+    <button class="popup-btn" id="afBtn" onclick="handleAdminForgot()">Send OTP</button>
+    <span class="popup-cancel" onclick="closeAdminForgot()">Cancel</span>
+  </div>
+</div>
+<div class="popup-overlay" id="adminOtpPopup">
+  <div class="popup-box">
+    <h3>📧 Email Verification</h3>
+    <p class="otp-sub">We sent a 6-digit verification code to <br><strong id="otpTargetEmail" style="color:#7c3aed;">your email</strong></p>
+
+    <input type="text" id="loginOtp" class="otp-input" placeholder="······" maxlength="6" inputmode="numeric" />
+
+    <div class="resend-row" style="display:flex; justify-content:space-between; margin:12px 0 16px; font-size:12.5px;">
+      <span id="timerText">Resend in: <strong id="countdown">60s</strong></span>
+      <button type="button" class="resend-btn" id="resendBtn" onclick="resendLoginOtp()" disabled style="color:#7c3aed; font-weight:700; background:none; border:none; cursor:pointer;">Resend OTP</button>
+    </div>
+
+    <button class="btn-main" onclick="verifyLoginOtp()" style="margin-top:0;">Verify & Enter Dashboard</button>
+    <div style="margin-top: 14px;">
+      <a href="#" onclick="closeOtpPopup()" style="font-size:13px; color:#64748b; text-decoration:none;">Cancel</a>
+    </div>
+  </div>
+</div>
+<script>
+const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+const BASE_URL = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+
+let activeAdminId = "";
+let countdownTimer = null;
+
+// Safety fallback for translations
+function safeTranslate(key, defaultFallback) {
+  if (typeof t === "function") {
+    try { return t(key); } catch(e) {}
+  }
+  return defaultFallback;
+}
+
+async function doAdminLogin() {
+  const identifier = document.getElementById("adminId").value.trim();
+  const password = document.getElementById("adminPass").value;
+
+  if (!identifier) { alert("Please enter your Admin ID or Email."); return; }
+  if (!password) { alert("Please enter your password."); return; }
+
+  try {
+    const res = await fetch(`${BASE_URL}/login`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ identifier, password, role: "admin" })
+    });
+    const data = await res.json();
+
+    if (!res.ok) { alert("❌ " + (data.message || "Login failed.")); return; }
+
+    if (data.requires2FA) {
+      activeAdminId = data.adminId;
+      document.getElementById("otpTargetEmail").textContent = data.email;
+      openOtpPopup();
+    }
+  } catch (e) {
+    alert("Internal server error. Please try again.");
+  }
+}
+
+
+function openOtpPopup() {
+  document.getElementById("loginOtp").value = "";
+  document.getElementById("adminOtpPopup").classList.add("active");
+  document.getElementById("loginOtp").focus();
+  startTimer(60);
+}
+
+function closeOtpPopup() {
+  document.getElementById("adminOtpPopup").classList.remove("active");
+  clearInterval(countdownTimer);
+}
+
+function startTimer(seconds) {
+  let left = seconds;
+  const resendBtn = document.getElementById("resendBtn");
+  const countEl = document.getElementById("countdown");
+  resendBtn.disabled = true;
+
+  clearInterval(countdownTimer);
+  countdownTimer = setInterval(() => {
+    left--;
+    countEl.textContent = `${left}s`;
+    if (left <= 0) {
+      clearInterval(countdownTimer);
+      document.getElementById("timerText").textContent = "Didn't receive it?";
+      resendBtn.disabled = false;
+    }
+  }, 1000);
+}
+
+async function resendLoginOtp() {
+  try {
+    const res = await fetch(`${BASE_URL}/admin/resend-login-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ adminId: activeAdminId })
+    });
+    const data = await res.json();
+    alert(data.message || "New OTP sent!");
+    document.getElementById("timerText").innerHTML = 'Resend in: <strong id="countdown">60s</strong>';
+    startTimer(60);
+  } catch (err) {
+    alert("Failed to resend OTP.");
+  }
+}
+
+async function verifyLoginOtp() {
+  const otp = document.getElementById("loginOtp").value.trim();
+  if (otp.length !== 6) { alert("Please enter the 6-digit OTP."); return; }
+
+  try {
+    const res = await fetch(`${BASE_URL}/admin/verify-login-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ adminId: activeAdminId, otp })
+    });
+    const data = await res.json();
+
+    if (!res.ok) {
+      alert("❌ " + (data.message || "Invalid OTP code."));
+      return;
+    }
+
+    localStorage.clear();
+    localStorage.setItem("token", data.token);
+    localStorage.setItem("loggedInUser", data.user.adminId);
+    localStorage.setItem("adminName", data.user.name || "Admin");
+    localStorage.setItem("userRole", "admin");
+
+    window.location.href = "admin.html";
+  } catch (e) {
+    alert("Verification failed. Please try again.");
+  }
+}
+
+
+
+
+
+let afStep = 1;
+
+function openAdminForgot() {
+  afStep = 1;
+  document.getElementById("afAdminId").value = "";
+  document.getElementById("afOtp").value = "";
+  document.getElementById("afNewPass").value = "";
+  document.getElementById("afConfirmPass").value = "";
+  
+  document.getElementById("afOtp").classList.add("hidden");
+  document.getElementById("afPassWrapper").classList.add("hidden");
+  document.getElementById("afConfirmPass").classList.add("hidden");
+  document.getElementById("afAdminId").classList.remove("hidden");
+  
+  document.getElementById("afBtn").textContent = "Send OTP";
+  document.getElementById("adminForgotPopup").classList.add("active");
+}
+
+function closeAdminForgot() {
+  document.getElementById("adminForgotPopup").classList.remove("active");
+}
+
+async function handleAdminForgot() {
+  const adminId = document.getElementById("afAdminId").value.trim();
+  const otp = document.getElementById("afOtp").value.trim();
+  const newPassword = document.getElementById("afNewPass").value;
+  const confirmPassword = document.getElementById("afConfirmPass").value;
+
+  if (afStep === 1) {
+    if (!adminId) {
+      alert("Please enter your Admin ID or registered Email.");
+      return;
+    }
+
+    const res = await fetch(`${BASE_URL}/admin/request-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ adminId })
+    });
+
+    const data = await res.json();
+    if (!res.ok) { alert("❌ " + (data.message || "Request failed.")); return; }
+
+    alert("✅ OTP sent to your registered contact.");
+
+    document.getElementById("afAdminId").classList.add("hidden");
+    document.getElementById("afOtp").classList.remove("hidden");
+    document.getElementById("afBtn").textContent = "Verify OTP";
+    afStep = 2;
+    document.getElementById("afOtp").focus();
+  }
+  else if (afStep === 2) {
+    if (otp.length !== 6) { alert("Please enter the 6-digit OTP."); return; }
+
+    const res = await fetch(`${BASE_URL}/admin/verify-otp`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ adminId, otp })
+    });
+
+    const data = await res.json();
+    if (!res.ok) { alert("❌ " + (data.message || "Invalid OTP.")); return; }
+
+    document.getElementById("afOtp").classList.add("hidden");
+    document.getElementById("afPassWrapper").classList.remove("hidden");
+    document.getElementById("afConfirmPass").classList.remove("hidden");
+    document.getElementById("afBtn").textContent = "Reset Password";
+    afStep = 3;
+    document.getElementById("afNewPass").focus();
+  }
+  else if (afStep === 3) {
+    const pwRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+    
+    if (!pwRegex.test(newPassword)) { 
+      alert("Password must be at least 8 characters and include uppercase, lowercase, number, and special character."); 
+      return; 
+    }
+
+    if (newPassword !== confirmPassword) {
+      alert("❌ Passwords do not match. Please re-enter.");
+      return;
+    }
+
+    const res = await fetch(`${BASE_URL}/admin/reset-password`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ adminId, newPassword })
+    });
+
+    const data = await res.json();
+    if (!res.ok) { alert("❌ " + (data.message || "Reset failed.")); return; }
+
+    alert("✅ Password reset successful! You can now log in.");
+    closeAdminForgot();
+  }
+}
+
+// Global Enter Key Listeners
+document.addEventListener("DOMContentLoaded", function() {
+  const loginInputs = ["adminId", "adminPass"];
+  loginInputs.forEach(id => {
+    document.getElementById(id).addEventListener("keypress", function(e) {
+      if (e.key === "Enter") doAdminLogin();
+    });
+  });
+
+  const popupInputs = ["afAdminId", "afOtp", "afNewPass"];
+  popupInputs.forEach(id => {
+    document.getElementById(id).addEventListener("keypress", function(e) {
+      if (e.key === "Enter") handleAdminForgot();
+    });
+  });
+  const loginOtpInput = document.getElementById("loginOtp");
+if (loginOtpInput) {
+  loginOtpInput.addEventListener("keypress", function(e) {
+    if (e.key === "Enter") verifyLoginOtp();
+  });
+}
+});
+
+function togglePass(id, icon) {
+  const f = document.getElementById(id);
+  if (f.type === "password") { f.type = "text"; icon.textContent = "🙈"; }
+  else { f.type = "password"; icon.textContent = "👁"; }
+}
+</script>
+
+</body>
+</html>

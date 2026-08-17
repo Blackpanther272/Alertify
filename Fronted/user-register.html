@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title data-i18n="userRegTitle">User Register — Disaster Management System</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🆘</text></svg>" />
+  <style>
+    .auth-card {
+    background: white;
+    width: 520px; /* ⬅️ Increased from 380px to 520px to give inputs room */
+    max-width: 92%;
+    margin: 30px auto 40px;
+    padding: 36px 32px 30px;
+    border-radius: 20px;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18);
+    text-align: center;
+}
+    .auth-card h2 { margin: 0 0 6px; font-size: 22px; font-weight: 700; color: #1e293b; }
+    .auth-card p.subtitle { color: #64748b; font-size: 13px; margin: 0 0 22px; }
+    .auth-card input, .auth-card select { display: block; width: 100%; padding: 11px 14px; margin: 0 0 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; font-family: inherit; box-sizing: border-box; transition: border-color 0.2s; }
+    .auth-card input:focus { outline: none; border-color: #2563eb; }
+    .mobile-row { display: flex; margin: 0 0 12px; gap: 0; }
+    .mobile-row .prefix { background: #1976d2; color: white; padding: 11px 12px; border-radius: 10px 0 0 10px; font-size: 14px; font-weight: 600; white-space: nowrap; display: flex; align-items: center; }
+    .mobile-row input { margin: 0; border-radius: 0 10px 10px 0; border-left: none; }
+    .password-wrapper { position: relative; margin: 0 0 6px; }
+    .password-wrapper input { margin: 0; padding-right: 40px; }
+    .password-wrapper span { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); cursor: pointer; font-size: 16px; user-select: none; }
+    .hint-text { font-size: 11px; color: #ef4444; margin: 0 0 14px; text-align: left; }
+    .btn-main { width: 100%; padding: 13px; background: linear-gradient(135deg, #16a34a, #15803d); color: white; border: none; border-radius: 12px; font-size: 15px; font-weight: 700; cursor: pointer; margin: 8px 0 0; transition: all 0.3s ease; font-family: inherit; }
+    .btn-main:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(22,163,74,0.35); }
+    .auth-links { margin-top: 18px; font-size: 13px; color: #64748b; }
+    .auth-links a { color: #2563eb; text-decoration: none; font-weight: 600; }
+    .auth-links a:hover { text-decoration: underline; }
+    .role-badge { display: inline-block; background: #f0fdf4; color: #15803d; font-size: 11px; font-weight: 700; padding: 3px 10px; border-radius: 20px; margin-bottom: 14px; letter-spacing: 0.5px; }
+  </style>
+</head>
+<body>
+<button id="themeToggle" class="global-theme-btn" title="Toggle Theme">🌙</button>
+<div class="auth-card">
+  <span class="role-badge" data-i18n="userRegBadge">👤 NEW USER REGISTRATION</span>
+  <h2 data-i18n="userRegTitle">Create Account</h2>
+  <p class="subtitle" data-i18n="userRegSubtitle">Register to access disaster alerts, SOS, and emergency services</p>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+  <input type="text" id="regFirstName" placeholder="First Name *" autocomplete="given-name" required />
+  <input type="text" id="regMiddleName" placeholder="Middle Name" autocomplete="additional-name" />
+</div>
+<input type="text" id="regLastName" placeholder="Last Name *" autocomplete="family-name" required />
+  <input type="email" id="regEmail" data-i18n-placeholder="userRegEmailPlaceholder" autocomplete="email" />
+
+ 
+   <!-- 1. Mobile Number (Clean Full Row) -->
+  <div class="mobile-row">
+    <span class="prefix">+91</span>
+    <input
+      type="text" id="regMobile" placeholder="10-digit Mobile Number *"
+      maxlength="10" inputmode="numeric" pattern="[0-9]{10}"
+      oninput="this.value = this.value.replace(/[^0-9]/g, '')"
+      autocomplete="tel" required
+    />
+  </div>
+
+  <!-- 2. State & District (Clean 50/50 Grid Row Below Mobile) -->
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0px;">
+    <input type="text" id="regState" placeholder="State (e.g. Odisha)" />
+    <input type="text" id="regDistrict" placeholder="District (e.g. Khordha)" />
+  </div>
+
+  <div class="password-wrapper">
+    <input type="password" id="regPass" data-i18n-placeholder="userRegPassPlaceholder" autocomplete="new-password" />
+    <span onclick="togglePass('regPass', this)">👁</span>
+  </div>
+  <p class="hint-text" data-i18n="userRegPassHint">Min 8 characters — must include uppercase, lowercase, number and special character</p>
+
+  <input type="password" id="regCpass" data-i18n-placeholder="userRegCpassPlaceholder" autocomplete="new-password" />
+
+  <button class="btn-main" onclick="doRegister()" data-i18n="userRegBtn">✅ Create Account</button>
+
+  <div class="auth-links">
+    <p style="margin:0 0 6px;"><span data-i18n="userRegHaveAccount">Already have an account?</span> <a href="user-login.html" data-i18n="userRegLoginLink">Login Here</a></p>
+    <p style="margin:0;"><span data-i18n="userLoginAdmin">Are you admin?</span> <a href="admin-login.html" data-i18n="userRegAdminLink">Admin Login →</a></p>
+  </div>
+</div>
+  
+<script>
+// 🍞 Toast Notification Function
+function showToast(msg, isSuccess = true) {
+  var old = document.getElementById("authToast");
+  if (old) old.remove();
+  var toast = document.createElement("div");
+  toast.id = "authToast";
+  toast.textContent = msg;
+  toast.style.cssText = `
+    position: fixed;
+    top: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: ${isSuccess ? "#16a34a" : "#dc2626"};
+    color: white;
+    padding: 13px 26px;
+    border-radius: 12px;
+    font-size: 14px;
+    font-weight: 700;
+    z-index: 9999999;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+    text-align: center;
+    transition: all 0.3s ease;
+  `;
+  document.body.appendChild(toast);
+  setTimeout(() => { if (toast) toast.remove(); }, 3000);
+}
+
+async function doRegister() {
+  const firstName  = document.getElementById("regFirstName").value.trim();
+  const middleName = document.getElementById("regMiddleName").value.trim();
+  const lastName   = document.getElementById("regLastName").value.trim();
+  const email      = document.getElementById("regEmail").value.trim();
+  const mobile     = document.getElementById("regMobile").value.trim();
+  const state      = document.getElementById("regState").value.trim();
+  const district   = document.getElementById("regDistrict").value.trim();
+  const pass       = document.getElementById("regPass").value;
+  const cpass      = document.getElementById("regCpass").value;
+
+  if (!firstName) { showToast("⚠️ First Name is required", false); return; }
+  if (!lastName)  { showToast("⚠️ Last Name is required", false); return; }
+  if (!mobile || !/^[0-9]{10}$/.test(mobile)) { showToast("⚠️ Enter valid 10-digit mobile number", false); return; }
+  if (!pass)      { showToast("⚠️ Password is required", false); return; }
+
+  const pwRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&]).{8,}$/;
+  if (!pwRegex.test(pass)) { showToast("⚠️ Password must be 8+ chars (A-Z, a-z, 0-9, symbol)", false); return; }
+  if (pass !== cpass) { showToast("⚠️ Passwords do not match", false); return; }
+
+  try {
+    const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    const apiUrl = isLocal ? "http://localhost:5000/api/register" : "https://alertifyy.onrender.com/api/register";
+
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ firstName, middleName, lastName, email, mobile, state, district, password: pass, role: "user" })
+    });
+    const data = await res.json();
+
+    if (!res.ok) { showToast("❌ " + (data.message || "Registration failed"), false); return; }
+
+    showToast("✅ Registration successful! Redirecting...", true);
+    setTimeout(() => { window.location.href = "user-login.html"; }, 1500);
+  } catch (e) {
+    showToast("❌ Server connection error", false);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  document.getElementById("regCpass")?.addEventListener("keypress", function(e) {
+    if (e.key === "Enter") doRegister();
+  });
+});
+
+function togglePass(id, icon) {
+  const f = document.getElementById(id);
+  if (f.type === "password") { f.type = "text"; icon.textContent = "🙈"; }
+  else { f.type = "password"; icon.textContent = "👁"; }
+}
+</script>
+<script src="theme.js"></script>
+<script src="i18n.js"></script>
+</body>
+</html>

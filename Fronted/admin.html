@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="dashTitle">Admin Dashboard | Disaster Management</title>
+
+<script src="dev-override.js"></script>
+
+
+
+  <link rel="stylesheet" href="admin.css">
+  <!-- Leaflet Map CSS & JS (Free, Open Source) -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<!-- Leaflet MarkerCluster CSS & JS -->
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css" />
+<script src="https://unpkg.com/leaflet.markercluster@1.5.3/dist/leaflet.markercluster.js"></script>
+<!-- Chart.js CDN for Analytics Dashboard (P4) -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+
+  <!-- Emergency Audio Alert -->
+  <audio id="sosAudio" preload="auto">
+    <source src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3" type="audio/mpeg">
+  </audio>
+</head>
+<body>
+<!-- ── 1. COLLAPSIBLE SIDEBAR NAVIGATION ── -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <span style="font-size: 22px;">🌐</span>
+      <span class="sidebar-brand">ALERTIFY ADMIN</span>
+    </div>
+
+    <nav class="sidebar-menu">
+      <button class="nav-item active" onclick="toggleSection('sos-section')">
+        <span>🚨</span> Live SOS Tracker <span class="nav-badge" id="sosNavBadge" style="display:none;">0</span>
+      </button>
+      <button class="nav-item" onclick="toggleSection('complaints-section')">
+        <span>📋</span> Complaints
+      </button>
+      <button class="nav-item" onclick="toggleSection('ngo-section')">
+        <span>🤝</span> NGO & Relief Hub
+      </button>
+      <button class="nav-item" onclick="toggleSection('damage-section')">
+        <span>🏚️</span> Damage Reports
+      </button>
+      <button class="nav-item" onclick="toggleSection('alerts-section')">
+        <span>🗺️</span> Disaster Monitoring
+      </button>
+      <button class="nav-item" onclick="toggleSection('broadcast-section')">
+  <span>📢</span> Emergency Broadcasts
+</button>
+<button class="nav-item" onclick="toggleSection('shelter-section')">
+  <span>🏠</span> Relief Shelters
+</button>
+    </nav>
+  </aside>
+
+  <!-- Open Main Content Wrapper -->
+  <div class="main-wrapper">
+  <header>
+    <h1 data-i18n="appName">🌐 Disaster Management — Admin</h1>
+    <!-- 🔊 SOS Siren Controller Button -->
+    <button type="button" id="sosAudioToggleBtn" onclick="toggleSosAlarmMute()" style="display:inline-flex; align-items:center; gap:6px; background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.3); color:white; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer; margin-right:12px; transition:all 0.2s;">
+      <span id="sosAudioIcon">🔊</span>
+      <span id="sosAudioStatus">Alarm Active</span>
+    </button>
+    <div class="avatar-wrap" style="position: relative;">
+      <!-- Avatar Trigger Circle -->
+      <div class="avatar-circle" id="adminAvatar" onclick="toggleAdminMenu()" style="width: 42px; height: 42px; border-radius: 50%; background: linear-gradient(135deg, #2563eb, #1e4ed8); color: white; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 16px; cursor: pointer; border: 2px solid rgba(255,255,255,0.8); box-shadow: 0 4px 12px rgba(0,0,0,0.15); user-select: none;">
+        A
+      </div>
+
+      <!-- Modern Admin Dropdown Menu -->
+      <div class="avatar-menu hidden" id="adminAvatarMenu" style="position: absolute; right: 0; top: 52px; width: 250px; background: white; border-radius: 16px; box-shadow: 0 16px 40px rgba(0,0,0,0.18); border: 1px solid #e2e8f0; padding: 16px; z-index: 99999;">
+        
+        <!-- User Info Header -->
+        <div style="display: flex; align-items: center; gap: 12px; padding-bottom: 12px; border-bottom: 1px solid #f1f5f9; margin-bottom: 10px;">
+          <div style="width: 38px; height: 38px; border-radius: 50%; background: #eff6ff; color: #2563eb; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 15px;" id="adminMenuAvatarIcon">
+            A
+          </div>
+          <div style="overflow: hidden;">
+            <div id="adminAvatarName" style="font-weight: 700; font-size: 14px; color: #1e293b; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+              Admin
+            </div>
+            <div style="display: inline-flex; align-items: center; gap: 4px; background: #dbeafe; color: #1e40af; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 10px; margin-top: 2px;">
+              🛡️ SUPER ADMIN
+            </div>
+          </div>
+        </div>
+
+        <!-- Meta Details -->
+        <div style="font-size: 11.5px; color: #64748b; margin-bottom: 12px; line-height: 1.6;">
+          <div>🆔 <strong>ID:</strong> <span id="adminIdDisplay" style="color: #334155; font-weight: 600;">ADM-HQ</span></div>
+          <div>🟢 <strong>Status:</strong> <span style="color: #16a34a; font-weight: 700;">Live Session Active</span></div>
+        </div>
+
+        <!-- Menu Action Options -->
+        <div style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px;">
+          <button type="button" onclick="openAdminEditProfileModal()" style="width: 100%; display: flex; align-items: center; gap: 8px; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; font-weight: 700; color: #334155; cursor: pointer;">
+            <span>✏️</span> Edit Profile & Password
+          </button>
+          
+          <button type="button" onclick="toggleAdminDarkMode()" style="width: 100%; display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 12px; font-weight: 700; color: #334155; cursor: pointer;">
+            <span style="display:flex; align-items:center; gap:8px;"><span>🌙</span> Dark Mode</span>
+            <span id="adminThemeState" style="font-size: 10px; color: #64748b;">OFF</span>
+          </button>
+        </div>
+
+        <!-- Logout Action Button -->
+        <button id="logoutBtn" type="button" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px; padding: 9px; background: #fef2f2; color: #dc2626; border: 1px solid #fecaca; border-radius: 10px; font-weight: 700; font-size: 12.5px; cursor: pointer;">
+          <span>⎋</span> Logout Session
+        </button>
+
+      </div>
+    </div>
+  </header>
+
+  <div class="admin-content">
+<!-- ── 📢 BROADCAST SECTION ── -->
+<section id="broadcast-section" class="hidden admin-section">
+  <h2>📢 Public Emergency Broadcasts</h2>
+  
+  <!-- Form to publish broadcast -->
+  <div style="background:white; border-radius:12px; padding:20px; margin:16px 0; border:1px solid #e2e8f0;">
+    <h3 style="margin-bottom:12px; font-size:15px;">Create New Broadcast Alert</h3>
+    <!-- ⚡ Quick Broadcast Templates -->
+    <div style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:14px;">
+      <span style="font-size:12px; font-weight:700; color:#64748b; align-self:center;">⚡ Quick Presets:</span>
+      <button type="button" onclick="applyBroadcastTemplate('flood')" style="background:#eff6ff; color:#1d4ed8; border:1px solid #bfdbfe; padding:5px 10px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer;">🌊 Flash Flood</button>
+      <button type="button" onclick="applyBroadcastTemplate('cyclone')" style="background:#faf5ff; color:#7c3aed; border:1px solid #e9d5ff; padding:5px 10px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer;">🌀 Severe Cyclone</button>
+      <button type="button" onclick="applyBroadcastTemplate('heatwave')" style="background:#fff7ed; color:#ea580c; border:1px solid #ffedd5; padding:5px 10px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer;">🔥 Heatwave Alert</button>
+      <button type="button" onclick="applyBroadcastTemplate('earthquake')" style="background:#fef2f2; color:#dc2626; border:1px solid #fecaca; padding:5px 10px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer;">🌍 Earthquake Safety</button>
+      <button type="button" onclick="applyBroadcastTemplate('allclear')" style="background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; padding:5px 10px; border-radius:20px; font-size:12px; font-weight:700; cursor:pointer;">✅ All Clear / Safe</button>
+    </div>
+    <input type="text" id="broadcastTitle" placeholder="Alert Title (e.g. Flood Warning in Cuttack)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1; margin-bottom:10px; box-sizing:border-box;">
+    <textarea id="broadcastMsg" placeholder="Alert Message & Instructions for citizens..." rows="3" style="width:100%; padding:10px; border-radius:8px; border:1px solid #cbd5e1; margin-bottom:10px; box-sizing:border-box;"></textarea>
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+      <select id="broadcastSeverity" style="flex:1; padding:10px; border-radius:8px; border:1px solid #cbd5e1;">
+        <option value="Medium">Severity: Medium</option>
+        <option value="High">Severity: High</option>
+        <option value="Critical">Severity: 🔴 Critical</option>
+      </select>
+      <input type="text" id="broadcastState" placeholder="Target State (or 'All')" style="flex:1; padding:10px; border-radius:8px; border:1px solid #cbd5e1;">
+      <input type="text" id="broadcastDistrict" placeholder="Target District (or 'All')" style="flex:1; padding:10px; border-radius:8px; border:1px solid #cbd5e1;">
+    </div>
+    <button onclick="publishBroadcast()" style="background:#dc2626; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:700; cursor:pointer;">🚨 Publish Broadcast</button>
+  </div>
+
+  <div id="broadcastList" style="display:flex; flex-direction:column; gap:12px;"></div>
+</section>
+
+<!-- ── 🏠 RELIEF SHELTERS SECTION ── -->
+<section id="shelter-section" class="hidden admin-section">
+  <h2>🏠 Relief Shelters & Camps</h2>
+
+  <!-- Form to register shelter -->
+  <div style="background:white; border-radius:12px; padding:20px; margin:16px 0; border:1px solid #e2e8f0;">
+    <h3 style="margin-bottom:12px; font-size:15px;">Register Relief Shelter</h3>
+    <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:10px; margin-bottom:10px;">
+      <input type="text" id="shelterName" placeholder="Shelter Name" style="padding:10px; border-radius:8px; border:1px solid #cbd5e1;">
+      <input type="text" id="shelterAddress" placeholder="Address / Landmark" style="padding:10px; border-radius:8px; border:1px solid #cbd5e1;">
+      <input type="text" id="shelterState" placeholder="State" style="padding:10px; border-radius:8px; border:1px solid #cbd5e1;">
+      <input type="text" id="shelterDistrict" placeholder="District" style="padding:10px; border-radius:8px; border:1px solid #cbd5e1;">
+      <input type="number" id="shelterCapacity" placeholder="Max Capacity (e.g. 500)" style="padding:10px; border-radius:8px; border:1px solid #cbd5e1;">
+      <input type="text" id="shelterPhone" placeholder="Contact Phone" style="padding:10px; border-radius:8px; border:1px solid #cbd5e1;">
+    </div>
+    <button onclick="registerShelter()" style="background:#1d4ed8; color:white; border:none; padding:10px 20px; border-radius:8px; font-weight:700; cursor:pointer;">➕ Register Shelter</button>
+  </div>
+
+  <div class="table-scroll">
+    <table id="shelterTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Location</th>
+          <th>Capacity</th>
+          <th>Occupancy</th>
+          <th>Status</th>
+          <th>Contact</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</section>
+  <!-- ── ADMIN DASHBOARD ── -->
+  <section class="admin-dashboard">
+
+    <div class="hero-banner">
+      <div class="hero-left">
+       <div class="hero-greeting" id="adminName"></div>
+        <div class="hero-quote" data-i18n="appTagline">Every action you take here could save a life. Stay vigilant, act fast.</div>
+        <div class="hero-date" id="heroDayTime"></div>
+      </div>
+      <div class="hero-right">🛡️</div>
+    </div>
+
+   <!-- ── LIVE KPI COUNTER CARDS ── -->
+      <div class="kpi-grid">
+        <div class="kpi-card" style="border-left: 4px solid var(--danger-red);" onclick="toggleSection('sos-section')">
+          <div>
+            <div class="kpi-title">ACTIVE SOS CALLS</div>
+            <div class="kpi-value" id="kpiSosNum" style="color: var(--danger-red);">0</div>
+          </div>
+          <div class="kpi-icon" style="background: #fef2f2; color: var(--danger-red);">🚨</div>
+        </div>
+
+        <div class="kpi-card" style="border-left: 4px solid var(--warning-amber);" onclick="toggleSection('complaints-section')">
+          <div>
+            <div class="kpi-title">PENDING COMPLAINTS</div>
+            <div class="kpi-value" id="kpiComplaintsNum" style="color: var(--warning-amber);">0</div>
+          </div>
+          <div class="kpi-icon" style="background: #fffbeb; color: var(--warning-amber);">📋</div>
+        </div>
+
+        <div class="kpi-card" style="border-left: 4px solid var(--admin-primary);" onclick="toggleSection('ngo-section')">
+          <div>
+            <div class="kpi-title">APPROVED NGOS</div>
+            <div class="kpi-value" id="kpiNgosNum" style="color: var(--admin-primary);">0</div>
+          </div>
+          <div class="kpi-icon" style="background: #eff6ff; color: var(--admin-primary);">🤝</div>
+        </div>
+
+        <div class="kpi-card" style="border-left: 4px solid #8b5cf6;" onclick="toggleSection('damage-section')">
+          <div>
+            <div class="kpi-title">OPEN DAMAGE REPORTS</div>
+            <div class="kpi-value" id="kpiReportsNum" style="color: #8b5cf6;">0</div>
+          </div>
+          <div class="kpi-icon" style="background: #f5f3ff; color: #8b5cf6;">🏚️</div>
+        </div>
+      </div>
+    <!-- 📊 P4: INTERACTIVE DISASTER ANALYTICS CHARTS -->
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px; margin: 20px 0;">
+      
+      <!-- Chart 1: System Resolution Trends -->
+      <div style="background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 14px rgba(0,0,0,0.05);">
+        <h3 style="font-size: 15px; color: #1e293b; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+          <span>📈 Incident Status Overview</span>
+          <small style="font-size: 11px; color: #64748b; font-weight: normal;">Live Metrics</small>
+        </h3>
+        <div style="position: relative; height: 220px; width: 100%;">
+          <canvas id="incidentStatusChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Chart 2: Disaster Type Breakdown -->
+      <div style="background: white; border-radius: 16px; padding: 20px; border: 1px solid #e2e8f0; box-shadow: 0 4px 14px rgba(0,0,0,0.05);">
+        <h3 style="font-size: 15px; color: #1e293b; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+          <span>🌪️ Damage by Disaster Type</span>
+          <small style="font-size: 11px; color: #64748b; font-weight: normal;">Report Categorization</small>
+        </h3>
+        <div style="position: relative; height: 220px; width: 100%;">
+          <canvas id="disasterTypeChart"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="card-container">
+
+      <div class="card card-complaints" onclick="toggleSection('complaints-section')">
+        <div class="card-icon">📋</div>
+        <h3 data-i18n="fileComplaint">Complaint Management</h3>
+      <p data-i18n="fileComplaintSubtitle">Review and respond to citizen complaints filed</p>
+        <div class="card-cta" data-i18n="back">Open →</div>
+      </div>
+
+     <div class="card card-sos" onclick="toggleSection('sos-section')">
+ <div class="card-icon">🚨</div>
+      <h3 data-i18n="adminSos">Emergency Alert Management</h3>
+        <p data-i18n="adminSosSubtitle">Track GPS location of users who triggered emergency SOS alerts.</p>
+        <div class="card-cta" data-i18n="back">Open →</div>
+      </div>
+
+
+
+
+
+       <div class="card card-alerts" onclick="toggleSection('alerts-section')">
+       <div class="card-icon">🗺️</div>
+        <h3 data-i18n="adminLiveInfo">Disaster Monitoring Dashboard</h3>
+        <p data-i18n="weatherAlerts">Real-time earthquake and storm alerts from USGS and weather APIs.</p>
+       
+        <div class="card-cta" data-i18n="back">Open →</div>
+
+      </div>
+
+      <div class="card card-ngo" onclick="toggleSection('ngo-section')">
+        <div class="card-icon">🤝</div>
+        <h3 data-i18n="ngoPortalTitle">NGO & Volunteer Management</h3>
+        <p data-i18n="ngoPortalSubtitle">Approve NGO registrations and dispatch help orders to their teams.</p>
+        <div class="card-cta" data-i18n="back">Open →</div>
+      </div>
+
+      <div class="card card-damage" onclick="toggleSection('damage-section')">
+        <div class="card-icon">🏚️</div>
+        <h3 data-i18n="damageReport">Damage Assessment Reports</h3>
+        <p data-i18n="damageAdminSubtitle">View photo-verified damage reports submitted by citizens.</p>
+        <div class="card-cta" data-i18n="back">Open →</div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ── COMPLAINTS SECTION ── -->
+  <section id="complaints-section" class="hidden admin-section">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+  <h2 data-i18n="fileComplaint">📋 Complaint Management</h2>
+  <button onclick="exportComplaintsToCsv()" style="background:#16a34a; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer;">📥 Export Complaints CSV</button>
+</div>
+    <div class="table-scroll">
+      <table id="complaintsTable">
+        <thead>
+          <tr>
+            <th data-i18n="complaintId">Complaint ID</th>
+            <th data-i18n="complaintTitle">Description</th>
+            <th data-i18n="ngoOrderStatus">Status</th>
+            <th data-i18n="trackRptDate">Date</th>
+            <th data-i18n="update">Action</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── NGO SECTION ── -->
+  <section id="ngo-section" class="hidden admin-section">
+    <h2 data-i18n="ngoPortalTitle">🤝 Registered NGOs</h2>
+
+    <div class="filter-bar">
+      <select id="stateSelect">
+        <option value="" data-i18n="ngoStateSelect">🗺️ Select State</option>
+      </select>
+      <select id="districtSelect">
+        <option value="" data-i18n="ngoDistrictSelect">📍 Select District</option>
+      </select>
+      <button onclick="filterNgos()" class="btn-primary" data-i18n="ngoStatusCheckBtn">🔍 Filter</button>
+      <button onclick="loadNgos()" class="btn-secondary" data-i18n="🔄 Reset">↺ Reset</button>
+    </div>
+
+    <div class="table-scroll">
+      <table id="ngoTable">
+        <thead>
+          <tr>
+            <th>NGO ID</th>
+            <th data-i18n="ngoNamePlaceholder">Name</th>
+            <th data-i18n="ngoStateLabel">State</th>
+            <th data-i18n="ngoDistrictLabel">District</th>
+            <th data-i18n="ngoTypeLabel">Type</th>
+            <th data-i18n="ngoHeadPlaceholder">Head</th>
+            <th data-i18n="ngoVolunteersLabel">Volunteers</th>
+            <th data-i18n="ngoOrderStatus">Status</th>
+            <th data-i18n="update">Action</th>
+            <th data-i18n="send">Send Help</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+
+    <h2 style="margin-top:24px;" data-i18n="ngoOrdersBtn">📦 Help Orders Tracking</h2>
+    <div class="table-scroll">
+      <table id="ordersTable">
+        <thead>
+          <tr>
+            <th data-i18n="ngoOrderLocation">Location</th>
+            <th data-i18n="ngoOrderNote">Note</th>
+            <th>NGO ID</th>
+            <th data-i18n="ngoOrderStatus">Status</th>
+            <th data-i18n="ngoOrderWorkNote">Work Note</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ── LIVE ALERTS & UNIFIED DISASTER MAP SECTION ── -->
+  <section id="alerts-section" class="hidden admin-section">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+      <h2>🗺️ Interactive Disaster & Relief Operations Map</h2>
+      <button onclick="loadUnifiedDisasterMap()" class="btn-refresh" style="padding:8px 14px; border-radius:8px; border:1px solid #cbd5e1; background:white; cursor:pointer;">🔄 Refresh Map Data</button>
+    </div>
+
+    <!-- Unified 3-Layer Map Container -->
+    <div style="background:white; border-radius:14px; border:1px solid #e2e8f0; padding:16px; margin-bottom:24px; box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+      <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+        <strong style="color:#1e293b; font-size:14px;">Live Multi-Layer Deployment</strong>
+        <div style="display:flex; gap:14px; font-size:12px; font-weight:700;">
+          <span style="color:#dc2626;">🔴 SOS Incidents</span>
+          <span style="color:#d97706;">🟡 Damage Reports</span>
+          <span style="color:#2563eb;">🔵 Registered NGOs</span>
+        </div>
+      </div>
+      <div id="unifiedDisasterMap" style="height:420px; width:100%; border-radius:10px; z-index:1;"></div>
+    </div>
+
+    <h2>⚠️ Real-Time Environmental Disaster Feeds</h2>
+    <div id="liveAlertsContainer" style="margin-top:14px;">
+      <p data-i18n="loading">Loading real-time disaster data...</p>
+    </div>
+  <div style="margin-top:24px;padding-top:20px;border-top:1px solid #e2e8f0;text-align:center;">
+    <button onclick="window.location.href='admin-weather.html'"
+      style="display:inline-flex;align-items:center;gap:10px;
+             background:linear-gradient(135deg,#1d4ed8,#0ea5e9);
+             color:white;border:none;border-radius:12px;
+             padding:14px 28px;font-size:14px;font-weight:700;cursor:pointer;
+             box-shadow:0 4px 14px rgba(14,165,233,0.4);">
+      🌤️ Full MSN Weather Dashboard ↗
+    </button>
+  </div>
+</section>
+
+  <!-- ── SOS SECTION ── -->
+  <section id="sos-section" class="hidden admin-section">
+    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:16px;">
+      <h2>🚨 Live SOS Tracker & Command Hub</h2>
+      <div style="display:flex; gap:8px;">
+        <button onclick="exportSosToCsv()" class="btn-primary" style="background:#16a34a; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer;">📥 Export SOS CSV</button>
+        <button onclick="loadSOS()" class="btn-refresh" data-i18n="🔄 Refresh">🔄 Refresh</button>
+      </div>
+    </div>
+
+    <!-- Live SOS Map Card -->
+    <div style="background:white; border-radius:14px; border:1px solid #e2e8f0; padding:16px; margin-bottom:20px; box-shadow:0 2px 10px rgba(0,0,0,0.05);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+        <strong style="color:#1e293b; font-size:15px;">🗺️ Live Distress Coordinate Mapping</strong>
+        <span style="font-size:12px; color:#64748b;">🔴 Red: Active SOS | 🟢 Green: Resolved</span>
+      </div>
+      <div id="sosMap" style="height:360px; width:100%; border-radius:10px; z-index:1;"></div>
+    </div>
+
+    <!-- SOS Distress Cards List -->
+    <div id="sosContainer" class="sos-scroll"></div>
+  </section>
+
+  <!-- ── DAMAGE REPORTS SECTION ── -->
+  <section id="damage-section" class="hidden admin-section">
+   <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:14px;">
+  <h2 data-i18n="damageReport">🏚️ Citizen Damage Reports</h2>
+  <div style="display:flex; gap:8px;">
+    <button onclick="exportDamageToCsv()" style="background:#16a34a; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer;">📥 Export Damage CSV</button>
+    <button onclick="loadDamageReports()" class="btn-refresh" data-i18n="🔄 Refresh">🔄 Refresh</button>
+  </div>
+</div>
+    <div id="damageReportsList" class="damage-list"></div>
+  </section>
+
+  <!-- ── POPUPS ── -->
+  <div id="popup" class="popup hidden">
+    <div class="popup-content">
+      <span class="close" onclick="closePopup()">&times;</span>
+      <div id="popupData"></div>
+    </div>
+  </div>
+
+  <div id="inputModal" class="popup hidden">
+    <div class="popup-content">
+      <span class="close" onclick="closeModal()">&times;</span>
+      <h3 id="modalTitle"></h3>
+      <textarea id="modalInput" rows="4" style="width:100%;padding:10px;border-radius:8px;border:1px solid #e2e8f0;font-size:14px;box-sizing:border-box;resize:vertical;" data-i18n-placeholder="adminNotePlaceholder"></textarea>
+      <br><br>
+      <button onclick="submitModal()" class="btn-primary" data-i18n="submit">Submit</button>
+    </div>
+  </div>
+
+  <footer>
+    <p data-i18n="copyright">© 2026 Disaster Management System | Admin Panel</p>
+  </footer>
+
+  <!-- ADMIN NOTE MODAL -->
+  <div id="adminNoteModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.6);z-index:99999;align-items:center;justify-content:center;padding:16px;">
+    <div style="background:white;border-radius:16px;width:100%;max-width:440px;padding:28px;box-shadow:0 20px 60px rgba(0,0,0,0.3);">
+      <h3 id="adminNoteTitle" data-i18n="adminNoteTitle" style="margin:0 0 6px;color:#1e293b;font-size:18px;font-weight:700;"></h3>
+      <p data-i18n="adminNoteSubtitle" style="color:#64748b;font-size:13px;margin:0 0 16px;">Write a note for the citizen — they will see this message.</p>
+      <textarea id="adminNoteInput" rows="4" data-i18n-placeholder="adminNotePlaceholder"
+        style="width:100%;padding:12px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:14px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>
+      <div style="display:flex;gap:10px;margin-top:16px;">
+        <button onclick="closeAdminNoteModal()" data-i18n="cancel" style="flex:1;padding:12px;background:#f1f5f9;color:#64748b;border:none;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;">Cancel</button>
+        <button id="adminNoteConfirm" onclick="submitAdminNote()" data-i18n="confirm" style="flex:2;padding:12px;color:white;border:none;border-radius:10px;font-size:14px;font-weight:700;cursor:pointer;background:#16a34a;">Confirm</button>
+      </div>
+    </div>
+  </div>
+<!-- ⚡ QUICK NGO DISPATCH MODAL -->
+<div class="popup-overlay" id="quickDispatchModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999999; align-items:center; justify-content:center; padding:16px;">
+  <div class="popup-box" style="max-width:480px; width:95%; max-height:90vh; overflow-y:auto; padding:24px; border-radius:16px; background:white; position:relative; text-align:left;">
+    <button type="button" onclick="closeQuickDispatchModal()" style="position:absolute; top:12px; right:14px; background:none; border:none; font-size:20px; cursor:pointer; color:#64748b;" title="Close">✕</button>
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+      <span style="font-size:24px;">⚡</span>
+      <h3 style="margin:0; color:#1e293b; font-size:18px;">Quick Task Force Dispatch</h3>
+    </div>
+    <p style="color:#64748b; font-size:13px; margin:0 0 14px;">Assign an emergency rescue operation directly to an approved NGO partner.</p>
+
+    <!-- Incident Info Banner -->
+    <div id="dispatchSosInfo" style="background:#fef2f2; border:1px solid #fecaca; border-left:4px solid #dc2626; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:13px; color:#991b1b;"></div>
+
+    <label style="font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:6px;">Select Nearest NGO Team *</label>
+    <select id="dispatchNgoSelect" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #cbd5e1; font-size:13px; margin-bottom:12px; box-sizing:border-box;">
+      <option value="">⏳ Loading NGOs...</option>
+    </select>
+
+    <label style="font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:6px;">Incident Location / Coordinates</label>
+    <input type="text" id="dispatchLocation" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #cbd5e1; font-size:13px; margin-bottom:12px; box-sizing:border-box;" placeholder="Location details">
+
+    <label style="font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:6px;">Rescue Mission Note / Special Instructions *</label>
+    <textarea id="dispatchNote" rows="3" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #cbd5e1; font-size:13px; margin-bottom:16px; box-sizing:border-box; resize:vertical;" placeholder="e.g. Flood rescue required immediately. 2 adults reported stranded."></textarea>
+
+    <div style="display:flex; gap:10px;">
+      <button type="button" onclick="confirmQuickDispatch()" style="flex:2; padding:12px; background:linear-gradient(135deg,#dc2626,#b91c1c); color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer;">🚀 Dispatch Rescue Order</button>
+      <button type="button" onclick="closeQuickDispatchModal()" style="flex:1; padding:12px; background:#f1f5f9; color:#64748b; border:none; border-radius:10px; font-weight:600; cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ✏️ ADMIN EDIT PROFILE & PASSWORD MODAL -->
+<div class="popup-overlay" id="adminEditProfileModal" style="display:none; position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:999999; align-items:center; justify-content:center; padding:16px;">
+  <div class="popup-box" style="max-width:420px; width:95%; background:white; border-radius:16px; padding:24px; text-align:left; position:relative; box-shadow:0 20px 50px rgba(0,0,0,0.3);">
+    <button type="button" onclick="closeAdminEditProfileModal()" style="position:absolute; top:12px; right:14px; background:none; border:none; font-size:20px; cursor:pointer; color:#64748b;">✕</button>
+    
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:4px;">
+      <span style="font-size:22px;">✏️</span>
+      <h3 style="margin:0; font-size:18px; color:#1e293b;">Edit Admin Profile</h3>
+    </div>
+    <p style="color:#64748b; font-size:12.5px; margin:0 0 16px;">Update command center credentials and password.</p>
+
+    <label style="font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:4px;">Admin Full Name *</label>
+    <input type="text" id="adminEditName" placeholder="Admin Name" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #cbd5e1; margin-bottom:12px; box-sizing:border-box;">
+
+    <label style="font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:4px;">Emergency Contact Mobile</label>
+    <input type="text" id="adminEditMobile" placeholder="10-digit Phone Number" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #cbd5e1; margin-bottom:12px; box-sizing:border-box;">
+
+    <label style="font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:4px;">New Password (leave blank to keep current)</label>
+    <input type="password" id="adminEditPass" placeholder="Min 6 characters" style="width:100%; padding:10px; border-radius:8px; border:1.5px solid #cbd5e1; margin-bottom:16px; box-sizing:border-box;">
+
+    <div style="display:flex; gap:10px;">
+      <button type="button" onclick="saveAdminProfileChanges()" style="flex:2; padding:11px; background:linear-gradient(135deg,#2563eb,#1d4ed8); color:white; border:none; border-radius:10px; font-weight:700; cursor:pointer;">💾 Save Changes</button>
+      <button type="button" onclick="closeAdminEditProfileModal()" style="flex:1; padding:11px; background:#f1f5f9; color:#64748b; border:none; border-radius:10px; font-weight:600; cursor:pointer;">Cancel</button>
+    </div>
+  </div>
+</div>
+
+
+
+
+    
+  </div><!-- end .admin-content -->
+</div>
+<!-- Edit Profile Modal -->
+<div class="profile-modal-overlay" id="editProfileModal">
+  <div class="profile-modal-box">
+    <h3>👤 Edit Profile</h3>
+
+    <label style="font-size: 12px; font-weight: 600; color: var(--text-sub);">Full Name</label>
+    <input type="text" id="profName" placeholder="Enter Full Name" />
+
+    <label style="font-size: 12px; font-weight: 600; color: var(--text-sub);">Mobile Number</label>
+    <input type="text" id="profMobile" placeholder="10-Digit Mobile" maxlength="10" />
+
+    <label style="font-size: 12px; font-weight: 600; color: var(--text-sub);">New Password (Optional)</label>
+    <input type="password" id="profNewPass" placeholder="Leave blank to keep unchanged" />
+
+    <button type="button" class="btn-main" onclick="saveProfileChanges()" style="width:100%; margin-top: 6px;">Save Changes</button>
+    <div style="text-align: center; margin-top: 12px;">
+      <a href="javascript:void(0)" onclick="closeEditProfile()" style="font-size: 13px; color: var(--text-sub); text-decoration: none;">Cancel</a>
+    </div>
+  </div>
+</div>
+  <script>
+    (function() {
+      var days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+      var d = new Date();
+      var h = d.getHours();
+      var period = h < 12 ? "Morning" : h < 17 ? "Afternoon" : "Evening";
+      var el = document.getElementById("heroDayTime");
+      if (el) el.textContent = "Good " + period + " — " + days[d.getDay()] + ", " + d.toLocaleDateString("en-IN",{day:"numeric",month:"long",year:"numeric"});
+    })();
+  </script>
+
+  <script src="i18n.js"></script>
+  <script src="admin.js"></script>
+  
+ 
+</body>
+</html>

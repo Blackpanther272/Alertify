@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title data-i18n="firstAidTitle">First Aid Guide | Disaster Management</title>
+  <style>
+    *{box-sizing:border-box;margin:0;padding:0;}
+    body{font-family:'Segoe UI',sans-serif;background:#f4f7fb;color:#1e293b;}
+    header{background:linear-gradient(135deg,#0f172a,#1e293b);color:white;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:10px;}
+    header h1{font-size:18px;}
+    header a{color:#93c5fd;text-decoration:none;font-size:14px;white-space:nowrap;}
+    .page-wrap{padding:20px;max-width:860px;margin:0 auto;}
+    h2{font-size:20px;color:#1e3a8a;margin-bottom:6px;}
+    .sub{color:#64748b;font-size:13px;margin-bottom:20px;}
+    .search-bar{width:100%;padding:12px 16px;border:1.5px solid #e2e8f0;border-radius:10px;font-size:15px;margin-bottom:20px;background:white;}
+    .search-bar:focus{outline:none;border-color:#2563eb;}
+    .guide-card{background:white;border-radius:12px;margin-bottom:14px;box-shadow:0 2px 10px rgba(0,0,0,0.07);overflow:hidden;}
+    .guide-header{padding:16px 20px;cursor:pointer;display:flex;align-items:center;gap:12px;border-left:5px solid #2563eb;}
+    .guide-header h3{font-size:15px;flex:1;}
+    .guide-header .arrow{font-size:12px;color:#94a3b8;transition:transform 0.3s;}
+    .guide-body{display:none;padding:0 20px 16px;border-top:1px solid #f1f5f9;}
+    .guide-body.open{display:block;}
+    .guide-body ol{padding-left:18px;margin-top:10px;}
+    .guide-body li{font-size:13px;color:#374151;margin-bottom:6px;line-height:1.6;}
+    .guide-body .warn{background:#fef2f2;border-left:3px solid #dc2626;padding:8px 12px;border-radius:6px;font-size:12px;color:#dc2626;margin-top:10px;}
+    .no-result{text-align:center;color:#94a3b8;padding:40px;display:none;}
+    footer{text-align:center;color:#94a3b8;font-size:12px;padding:20px;}
+    @media(max-width:600px){.page-wrap{padding:12px;}.search-bar{font-size:14px;}.guide-header h3{font-size:14px;}.guide-body li{font-size:12px;}}
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🩹 <span data-i18n="firstAidTitle">First Aid Guide</span></h1>
+    <a href="index.html" data-i18n="backToDashboard">← Back to Dashboard</a>
+  </header>
+  <div class="page-wrap">
+    <h2 data-i18n="firstAidH2">Emergency First Aid — Quick Reference</h2>
+    <p class="sub" data-i18n="firstAidSub">Works offline. Tap any guide to expand. Follow steps carefully until medical help arrives.</p>
+    <input type="text" class="search-bar" id="searchInput" data-i18n-placeholder="firstAidSearch" oninput="searchGuides(this.value)" />
+    <div id="guideList"></div>
+    <p class="no-result" id="noResult" data-i18n="firstAidNoResult">No guides found. Try another keyword.</p>
+  </div>
+  <footer data-i18n="copyright">© 2026 Disaster Management System | College Major Project</footer>
+
+  <script src="i18n.js"></script>
+  <script>
+    const guideKeys = [
+      { icon:"🌊", color:"#1d4ed8", titleKey:"fa_flood_title",
+        stepKeys:["fa_flood_s1","fa_flood_s2","fa_flood_s3","fa_flood_s4","fa_flood_s5","fa_flood_s6"],
+        warnKey:"fa_flood_warn" },
+      { icon:"🌍", color:"#7c2d12", titleKey:"fa_earthquake_title",
+        stepKeys:["fa_earthquake_s1","fa_earthquake_s2","fa_earthquake_s3","fa_earthquake_s4","fa_earthquake_s5","fa_earthquake_s6"],
+        warnKey:"fa_earthquake_warn" },
+      { icon:"🌀", color:"#0369a1", titleKey:"fa_cyclone_title",
+        stepKeys:["fa_cyclone_s1","fa_cyclone_s2","fa_cyclone_s3","fa_cyclone_s4","fa_cyclone_s5","fa_cyclone_s6"],
+        warnKey:"fa_cyclone_warn" },
+      { icon:"❤️", color:"#dc2626", titleKey:"fa_cpr_title",
+        stepKeys:["fa_cpr_s1","fa_cpr_s2","fa_cpr_s3","fa_cpr_s4","fa_cpr_s5","fa_cpr_s6"],
+        warnKey:"fa_cpr_warn" },
+      { icon:"🐍", color:"#16a34a", titleKey:"fa_snakebite_title",
+        stepKeys:["fa_snakebite_s1","fa_snakebite_s2","fa_snakebite_s3","fa_snakebite_s4","fa_snakebite_s5","fa_snakebite_s6"],
+        warnKey:"fa_snakebite_warn" },
+      { icon:"🔥", color:"#ea580c", titleKey:"fa_burns_title",
+        stepKeys:["fa_burns_s1","fa_burns_s2","fa_burns_s3","fa_burns_s4","fa_burns_s5","fa_burns_s6"],
+        warnKey:"fa_burns_warn" },
+      { icon:"🦴", color:"#7c3aed", titleKey:"fa_fracture_title",
+        stepKeys:["fa_fracture_s1","fa_fracture_s2","fa_fracture_s3","fa_fracture_s4","fa_fracture_s5","fa_fracture_s6"],
+        warnKey:"fa_fracture_warn" },
+      { icon:"💧", color:"#0891b2", titleKey:"fa_dehydration_title",
+        stepKeys:["fa_dehydration_s1","fa_dehydration_s2","fa_dehydration_s3","fa_dehydration_s4","fa_dehydration_s5","fa_dehydration_s6"],
+        warnKey:"fa_dehydration_warn" },
+      { icon:"😮", color:"#b45309", titleKey:"fa_choking_title",
+        stepKeys:["fa_choking_s1","fa_choking_s2","fa_choking_s3","fa_choking_s4","fa_choking_s5","fa_choking_s6"],
+        warnKey:"fa_choking_warn" },
+      { icon:"⚡", color:"#ca8a04", titleKey:"fa_electric_title",
+        stepKeys:["fa_electric_s1","fa_electric_s2","fa_electric_s3","fa_electric_s4","fa_electric_s5","fa_electric_s6"],
+        warnKey:"fa_electric_warn" },
+    ];
+
+  
+
+ function getTranslatedGuides() {
+  const lang = window.currentLang || "en";   // ✅ FIX
+
+  return guideKeys.map(g => ({
+    icon: g.icon,
+    color: g.color,
+    title: TRANSLATIONS[lang][g.titleKey] || TRANSLATIONS.en[g.titleKey],
+    steps: g.stepKeys.map(k => TRANSLATIONS[lang][k] || TRANSLATIONS.en[k]),
+    warn: TRANSLATIONS[lang][g.warnKey] || TRANSLATIONS.en[g.warnKey]
+  }));
+}
+
+    function renderGuides(list) {
+      const container = document.getElementById("guideList");
+      container.innerHTML = "";
+      list.forEach((g, i) => {
+        const card = document.createElement("div");
+        card.className = "guide-card";
+        card.innerHTML = `
+          <div class="guide-header" style="border-left-color:${g.color};" onclick="toggleGuide(${i})">
+            <span style="font-size:22px;">${g.icon}</span>
+            <h3>${g.title}</h3>
+            <span class="arrow" id="arr${i}">▼</span>
+          </div>
+          <div class="guide-body" id="body${i}">
+            <ol>${g.steps.map(s=>`<li>${s}</li>`).join("")}</ol>
+            <div class="warn">⚠️ ${g.warn}</div>
+          </div>`;
+        container.appendChild(card);
+      });
+    }
+
+    function toggleGuide(i) {
+      const body = document.getElementById("body"+i);
+      const arr  = document.getElementById("arr"+i);
+      const open = body.classList.contains("open");
+      document.querySelectorAll(".guide-body").forEach(b => b.classList.remove("open"));
+      document.querySelectorAll(".arrow").forEach(a => a.textContent = "▼");
+      if (!open) { body.classList.add("open"); arr.textContent = "▲"; }
+    }
+
+    function searchGuides(q) {
+      const term = q.toLowerCase().trim();
+      const guides = getTranslatedGuides();
+      if (!term) { renderGuides(guides); document.getElementById("noResult").style.display="none"; return; }
+      const filtered = guides.filter(g =>
+        g.title.toLowerCase().includes(term) ||
+        g.steps.some(s => s.toLowerCase().includes(term)) ||
+        g.warn.toLowerCase().includes(term)
+      );
+      renderGuides(filtered);
+      document.getElementById("noResult").style.display = filtered.length ? "none" : "block";
+    }
+ function updateFirstAidPage() {
+  const container = document.getElementById("guideList");
+
+  // ❗ STEP 1: CLEAR OLD UI COMPLETELY
+  if (container) container.innerHTML = "";
+
+  // ❗ STEP 2: RENDER AGAIN WITH NEW LANGUAGE
+  renderGuides(getTranslatedGuides());
+
+  // ❗ STEP 3: FIX SEARCH STATE
+  const input = document.getElementById("searchInput");
+  if (input && input.value.trim()) {
+    searchGuides(input.value);
+  }
+}
+document.addEventListener("langChanged", updateFirstAidPage);
+
+    window.addEventListener("load", updateFirstAidPage);
+  </script>
+</body>
+</html>
