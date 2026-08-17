@@ -347,9 +347,9 @@ class DisasterApp {
       this.windGroup.clearLayers();
 
       const [wRes, aRes] = await Promise.all([
-        fetch(`https://alertifyy.onrender.com/api/weather?lat=${this.userLat}&lng=${this.userLng}`),
-        fetch(`https://alertifyy.onrender.com/api/aqi?lat=${this.userLat}&lng=${this.userLng}`)
-      ]);
+  fetch(`https://alertify-backend-r8le.onrender.com/api/weather?lat=${this.userLat}&lng=${this.userLng}`),
+  fetch(`https://alertify-backend-r8le.onrender.com/api/aqi?lat=${this.userLat}&lng=${this.userLng}`)
+]);
 
       if (!wRes.ok) throw new Error('Weather API endpoint down');
       const w = await wRes.json();
