@@ -391,7 +391,7 @@ async function doLogin() {
 
   try {
     const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    const apiUrl = isLocal ? "http://localhost:5000/api/login" : "https://alertifyy.onrender.com/api/login";
+    const apiUrl = isLocal ? "http://localhost:5000/api/login" : "https://alertify-backend-r8le.onrender.com/api/login";
 
     const res = await fetch(apiUrl, {
       method: "POST",
@@ -511,7 +511,7 @@ function startFpTimer() {
 async function resendFpOtp() {
   const mobile = document.getElementById("fpMobile").value.trim();
   const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
 
   try {
     const res = await fetch(`${baseUrl}/request-otp`, {
@@ -535,7 +535,7 @@ async function resendFpOtp() {
 async function handleForgotWorkflow() {
   const mobile = document.getElementById("fpMobile").value.trim();
   const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
 
   // ----------------------------------------------------
   // STEP 1: Send OTP to Registered Mobile
@@ -792,7 +792,7 @@ async function sendSosNow() {
   if (navigator.onLine) {
     try {
       const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-      const apiUrl = isLocal ? "http://localhost:5000/api/sos" : "https://alertifyy.onrender.com/api/sos";
+      const apiUrl = isLocal ? "http://localhost:5000/api/sos" : "https://alertify-backend-r8le.onrender.com/api/sos";
       await fetch(apiUrl, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
