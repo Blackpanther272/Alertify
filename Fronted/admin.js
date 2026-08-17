@@ -31,7 +31,7 @@ const isLocal = window.location.hostname === "localhost" ||
                 window.location.hostname === "127.0.0.1" || 
                 window.location.protocol === "file:";
 
-const SERVER_URL = isLocal ? "http://localhost:5000" : "https://alertifyy.onrender.com";
+const SERVER_URL = isLocal ? "http://localhost:5000" : "https://alertify-backend-r8le.onrender.com";
 const BASE_API_URL = `${SERVER_URL}/api`;
 
 
@@ -324,7 +324,7 @@ document.addEventListener("click", function(e) {
 // ================= APPROVE =================
 async function approveNgo(id) {
   const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
 
   try {
     const res = await fetch(`${baseUrl}/admin/approve/${id}`, {
@@ -345,7 +345,7 @@ async function approveNgo(id) {
 // ================= REJECT =================
 async function rejectNgo(id) {
   const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
 
   try {
     const res = await fetch(`${baseUrl}/admin/reject/${id}`, {
@@ -490,7 +490,7 @@ async function loadSOS() {
   if (!container) { _isSosLoading = false; return; }
 
   const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
 
   try {
     var res = await fetch(`${baseUrl}/admin/sos`, { 
@@ -727,7 +727,7 @@ async function loadLiveAlerts() {
     var city = cities[i];
     try {
       var wRes = await fetch(
-  `https://alertifyy.onrender.com/api/weather?lat=${city.lat}&lng=${city.lng}`
+  `https://alertify-backend-r8le.onrender.com/api/weather?lat=${city.lat}&lng=${city.lng}`
 );
       var wData = await wRes.json();
       // OWM response format (backend now proxies OWM, not open-meteo)
@@ -838,7 +838,7 @@ async function submitModal() {
   }
 
   const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
 
   // 1. If updating Complaint
   if (modalType === "complaint") {
@@ -922,7 +922,7 @@ async function loadStates() {
   if (!stateSelect) return;
 
   const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
 
   try {
     const response = await fetch(`${baseUrl}/states`, {
@@ -958,7 +958,7 @@ if (stateSelect) {
     const stateId = selectedOption.getAttribute("data-id") || "";
 
     const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+    const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
 
     try {
       const response = await fetch(`${baseUrl}/districts?state=${encodeURIComponent(this.value)}&stateId=${stateId}`, {
@@ -987,7 +987,7 @@ async function filterNgos() {
   const district = document.getElementById("districtSelect").value;
 
   const response = await fetch(
-    `https://alertifyy.onrender.com/api/admin/filter-ngos?state=${state}&district=${district}`,
+  `https://alertify-backend-r8le.onrender.com/api/admin/filter-ngos?state=${state}&district=${district}`,
     {
       headers: {
         "Authorization": "Bearer " + token
@@ -1158,7 +1158,7 @@ async function submitAdminNote() {
     return;
   }
   try {
-   await fetch("https://alertifyy.onrender.com/api/admin/damage-report/" + _dmgUpdateId, {
+   await fetch("https://alertify-backend-r8le.onrender.com/api/admin/damage-report/" + _dmgUpdateId, {
       method: "PUT",
       headers: { "Content-Type": "application/json", Authorization: "Bearer " + token },
       body: JSON.stringify({ status: _dmgUpdateStatus, adminNote: note })
@@ -1717,7 +1717,7 @@ async function openQuickDispatchModal(sosId) {
 
   try {
     const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-    const currentBase = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+    const currentBase = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
 
     const res = await fetch(`${currentBase}/admin/ngos`, {
       headers: { Authorization: "Bearer " + token }
@@ -1775,7 +1775,7 @@ async function confirmQuickDispatch() {
   }
 
   const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const currentBase = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+  const currentBase = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
 
   try {
     const res = await fetch(`${currentBase}/admin/create-order`, {
@@ -1816,7 +1816,7 @@ let _typeChartInstance = null;
 
 async function renderAdminAnalyticsCharts() {
   const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
 
   try {
     const [sosRes, compRes, dmgRes] = await Promise.all([
@@ -2074,7 +2074,7 @@ async function saveAdminProfileChanges() {
   }
 
   const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertifyy.onrender.com/api";
+  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
 
   try {
     const res = await fetch(`${baseUrl}/admin/profile`, {
