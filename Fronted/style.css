@@ -2,12 +2,32 @@
 
 body {
   font-family: "Poppins", sans-serif;
-  background: linear-gradient(135deg, #0f172a, #1e293b, #020617);
-  background-size: 200% 200%;
-  animation: gradientMove 10s ease infinite;
-  text-align: center;
+  background: linear-gradient(180deg, #ff9933 0%, #ffffff 48%, #ffffff 52%, #138808 100%) !important;
+  background-attachment: fixed !important;
+  min-height: 100vh;
   margin: 0;
+  text-align: center;
   color: #1e293b;
+}
+/* 🚨 Red Blinking Beacon Animation */
+@keyframes sosBeaconBlink {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.85);
+    transform: scale(1);
+    filter: brightness(1);
+  }
+  50% {
+    box-shadow: 0 0 28px 10px rgba(220, 38, 38, 0.6);
+    transform: scale(1.02);
+    filter: brightness(1.15);
+  }
+}
+
+.sos-btn-top,
+#preLoginSOSBtn {
+  animation: sosBeaconBlink 1.2s infinite ease-in-out !important;
+  background: linear-gradient(135deg, #ef4444, #dc2626) !important;
+  border: 1px solid rgba(255, 255, 255, 0.4) !important;
 }
 /* 🌐 Global Top-Right Theme Toggle Button */
 .global-theme-btn {
@@ -1756,4 +1776,26 @@ nav, .navbar {
   .install-text span {
     display: none; /* Keeps it neat and compact on small phones */
   }
+}
+/* 📏 Input alignment & sizing */
+.auth-card input,
+.password-wrapper input {
+  height: 48px !important;
+  font-size: 14px !important;
+  padding: 12px 16px !important;
+  border: 1.5px solid #e2e8f0 !important;
+  border-radius: 12px !important;
+  box-sizing: border-box !important;
+  margin-bottom: 12px !important;
+}
+
+.password-wrapper {
+  position: relative;
+  width: 100%;
+  margin-bottom: 12px !important;
+}
+
+.password-wrapper input {
+  margin: 0 !important;
+  padding-right: 44px !important;
 }
