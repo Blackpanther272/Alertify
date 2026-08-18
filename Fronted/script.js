@@ -1,3 +1,10 @@
+window.addEventListener("pageshow", function () {
+  const token = localStorage.getItem("token");
+  if (!token && !window.location.pathname.includes("login") && !window.location.pathname.includes("register")) {
+    document.getElementById("dashboard")?.classList.add("hidden");
+    document.getElementById("roleSelection")?.classList.remove("hidden");
+  }
+});
 // 🍞 Global Toast Notification Function
 function showToast(message, isSuccess = true) {
   var existing = document.getElementById("appGlobalToast");
@@ -55,21 +62,48 @@ function closeSidebar() {
 }
 
 document.addEventListener("DOMContentLoaded", function () {
-const closeBtn = document.getElementById("closeBanner");
+  const banner = document.getElementById("installBanner");
+  const closeBtn = document.getElementById("closeBanner");
+  const installBtn = document.getElementById("installBtn");
 
-if (closeBtn) {
-  closeBtn.addEventListener("click", function () {
+  // 1. Handle Close Button (✕)
+  if (closeBtn) {
+    closeBtn.addEventListener("click", function () {
+      if (banner) banner.classList.add("hidden");
+      sessionStorage.setItem("bannerClosed", "true");
+    });
+  }
 
-    const banner = document.getElementById("installBanner");
-
-    if (banner) {
-      banner.classList.add("hidden");
+  // 2. Handle Browser PWA Install Prompt
+  let deferredPrompt = null;
+  window.addEventListener("beforeinstallprompt", function (e) {
+    e.preventDefault();
+    deferredPrompt = e;
+    // Show banner only if the user hasn't closed it in this session
+    if (banner && !sessionStorage.getItem("bannerClosed")) {
+      banner.classList.remove("hidden");
     }
-
-    sessionStorage.setItem("bannerClosed", "true");
-
   });
-}
+
+  // 3. Handle Install Button Click
+  if (installBtn) {
+    installBtn.addEventListener("click", async function () {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const choiceResult = await deferredPrompt.userChoice;
+        if (choiceResult.outcome === "accepted") {
+          if (banner) banner.classList.add("hidden");
+        }
+        deferredPrompt = null;
+      }
+    });
+  }
+
+  // 4. Hide banner automatically once installed
+  window.addEventListener("appinstalled", function () {
+    if (banner) banner.classList.add("hidden");
+    deferredPrompt = null;
+  });
 const savedUser = localStorage.getItem("loggedInUser");
   const savedRole = localStorage.getItem("userRole");
   const savedName = localStorage.getItem("userName") || "";
@@ -1853,15 +1887,20 @@ async function loadCitizenBroadcasts() {
 
 function openSheltersPopup() {
   const popup = document.getElementById("shelterPopup");
-  if (popup) popup.classList.add("active");
+  if (popup) {
+    popup.classList.add("active");
+    popup.style.display = "flex";
+  }
   loadCitizenShelters();
 }
 
 function closeSheltersPopup() {
   const popup = document.getElementById("shelterPopup");
-  if (popup) popup.classList.remove("active");
+  if (popup) {
+    popup.classList.remove("active");
+    popup.style.display = "none";
+  }
 }
-
 async function loadCitizenShelters() {
   const container = document.getElementById("userShelterList");
   if (!container) return;
@@ -1909,110 +1948,5 @@ async function loadCitizenShelters() {
     }).join("");
   } catch (err) {
     container.innerHTML = "<p style='color:#dc2626; text-align:center;'>Failed to load shelters.</p>";
-  }
-}
-
-
-
-
-// ============================================================
-// 🟢 "I AM SAFE" & SAFETY REGISTRY LOGIC (P2)
-// ============================================================
-
-function openSafeCheckInModal() {
-  const modal = document.getElementById("safeCheckInModal");
-  if (!modal) return;
-
-  const savedName = localStorage.getItem("userName") || "";
-  const savedMobile = localStorage.getItem("loggedInUser") || "";
-  
-  if (savedName) document.getElementById("safeName").value = savedName;
-  if (savedMobile && /^[0-9]{10}$/.test(savedMobile)) document.getElementById("safeMobile").value = savedMobile;
-
-  modal.style.display = "flex";
-}
-
-function closeSafeModal() {
-  const modal = document.getElementById("safeCheckInModal");
-  if (modal) modal.style.display = "none";
-}
-
-async function submitSafeCheckIn() {
-  const name = document.getElementById("safeName").value.trim();
-  const mobile = document.getElementById("safeMobile").value.trim();
-  const district = document.getElementById("safeDistrict").value.trim();
-  const statusNote = document.getElementById("safeNote").value.trim();
-
-  if (!name || !mobile) {
-    showToast("⚠️ Name and Mobile number are required", false);
-    return;
-  }
-
-  const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
-
-  try {
-    const res = await fetch(`${baseUrl}/safety/mark-safe`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, mobile, district, statusNote })
-    });
-
-    const data = await res.json();
-    if (res.ok) {
-      showToast("🟢 Marked as Safe! Your status is registered.", true);
-      closeSafeModal();
-    } else {
-      showToast("❌ " + (data.message || "Failed to submit"), false);
-    }
-  } catch (e) {
-    showToast("❌ Network error. Try again.", false);
-  }
-}
-
-function openSafetySearchModal() {
-  const modal = document.getElementById("safetySearchModal");
-  if (!modal) return;
-  modal.style.display = "flex";
-  searchSafetyRegistry();
-}
-
-function closeSafetySearchModal() {
-  const modal = document.getElementById("safetySearchModal");
-  if (modal) modal.style.display = "none";
-}
-
-async function searchSafetyRegistry() {
-  const query = document.getElementById("safetySearchQuery").value.trim();
-  const container = document.getElementById("safetySearchResults");
-  if (!container) return;
-
-  container.innerHTML = "<p style='color:#64748b; text-align:center; padding:12px;'>⏳ Searching registry...</p>";
-
-  const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
-  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
-
-  try {
-    const res = await fetch(`${baseUrl}/safety/search?query=${encodeURIComponent(query)}`);
-    const results = await res.json();
-
-    if (!Array.isArray(results) || !results.length) {
-      container.innerHTML = "<p style='color:#94a3b8; text-align:center; padding:16px;'>No matching check-ins found.</p>";
-      return;
-    }
-
-    container.innerHTML = results.map(item => `
-      <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-left:4px solid #16a34a; border-radius:10px; padding:12px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-          <strong style="color:#14532d; font-size:14px;">🟢 ${item.name}</strong>
-          <span style="font-size:11px; color:#16a34a; font-weight:700;">SAFE</span>
-        </div>
-        <div style="font-size:12.5px; color:#374151;">📱 <strong>Phone:</strong> ${item.mobile} | 📍 <strong>Location:</strong> ${item.district || 'Disaster Zone'}</div>
-        <div style="font-size:12px; color:#4b5563; margin-top:3px;">💬 "${item.statusNote || 'I am safe.'}"</div>
-        <div style="font-size:11px; color:#94a3b8; margin-top:4px;">⏰ Updated: ${new Date(item.markedAt).toLocaleString('en-IN')}</div>
-      </div>
-    `).join("");
-  } catch (err) {
-    container.innerHTML = "<p style='color:#dc2626; text-align:center;'>Failed to query safety registry.</p>";
   }
 }
