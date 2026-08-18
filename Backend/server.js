@@ -343,9 +343,9 @@ app.post("/api/login", async (req, res) => {
 
       console.log(`[ADMIN LOGIN OTP] Code for ${user.email} (${user.adminId}) is: ${otp}`);
 
-     // Send email asynchronously in background so login responds instantly
-      transporter.sendMail({
-        from: `"Alertify Command Center" <${process.env.EMAIL_USER}>`,
+    // Send email via Resend API safely
+      resend.emails.send({
+        from: "Alertify Command Center <onboarding@resend.dev>",
         to: user.email,
         subject: "🛡️ Admin 2FA Login Code",
         html: `
@@ -356,7 +356,7 @@ app.post("/api/login", async (req, res) => {
             <p style="color: #64748b; font-size: 13px;">Expires in 5 minutes.</p>
           </div>
         `
-      }).catch(err => console.error("Background email error:", err.message));
+      }).catch(err => console.error("Resend API error:", err.message));
 
       const maskedEmail = user.email.replace(/(.{2})(.*)(?=@)/, (g1, g2, g3) => g2 + "*".repeat(g3.length));
       return res.json({
