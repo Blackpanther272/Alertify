@@ -193,7 +193,7 @@ async function loadSafeZones(lat, lng) {
       renderOverpassResults(data.elements, lat, lng);
     }
 
-  function renderOverpassResults(elements, userLat, userLng) {
+ function renderOverpassResults(elements, userLat, userLng) {
       var cards = document.getElementById('szCards');
       cards.innerHTML = '';
 
@@ -207,20 +207,22 @@ async function loadSafeZones(lat, lng) {
         if (!pLat || !pLng) return;
 
         var tags = place.tags || {};
-        var name = tags.name || 'Emergency Center';
+        var name = tags.name || 'Emergency Facility';
         var amenity = tags.amenity || 'shelter';
 
         var color = '#64748b', emoji = '📍', label = 'Safe Zone';
 
-        if (amenity === 'shelter') {
+        if (amenity === 'shelter' || amenity === 'disaster_help_point') {
           color = '#7c3aed'; emoji = '🏠'; label = 'Cyclone Shelter';
         } else if (amenity === 'hospital') {
-          color = '#dc2626'; emoji = '🏥'; label = 'Hospital / Emergency';
-        } else if (amenity === 'clinic' || amenity === 'health_post') {
-          color = '#0891b2'; emoji = '🏨'; label = 'Health Centre';
+          color = '#dc2626'; emoji = '🏥'; label = 'Hospital';
+        } else if (amenity === 'clinic' || amenity === 'health_post' || amenity === 'doctors' || amenity === 'doctor' || amenity === 'centre') {
+          color = '#0891b2'; emoji = '🏨'; label = 'Health Clinic';
+        } else if (amenity === 'pharmacy') {
+          color = '#10b981'; emoji = '💊'; label = 'Pharmacy / Medicine';
         } else if (amenity === 'police') {
           color = '#2563eb'; emoji = '👮'; label = 'Police Station';
-        } else if (amenity === 'fire_station') {
+        } else if (amenity === 'fire_station' || amenity === 'ambulance_station') {
           color = '#ea580c'; emoji = '🚒'; label = 'Fire Station';
         }
 
@@ -230,8 +232,8 @@ async function loadSafeZones(lat, lng) {
 
         var icon = L.divIcon({
           className: '',
-          html: '<div style="background:' + color + ';color:white;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);">' + emoji + '</div>',
-          iconSize: [32, 32], iconAnchor: [16, 16]
+          html: '<div style="background:' + color + ';color:white;border-radius:50%;width:34px;height:34px;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.3);">' + emoji + '</div>',
+          iconSize: [34, 34], iconAnchor: [17, 17]
         });
 
         var gmapsUrl = 'https://maps.google.com/?q=' + pLat + ',' + pLng;
@@ -248,8 +250,8 @@ async function loadSafeZones(lat, lng) {
             '<h4>' + emoji + ' ' + name + '</h4>' +
             '<p>' + label + ' · <strong style="color:#2563eb;">~' + distKm + ' km away</strong></p>' +
           '</div>' +
-          '<div>' +
-            '<a href="' + gmapsUrl + '" target="_blank">📍 View Pin</a>' +
+          '<div style="margin-top:8px;">' +
+            '<a href="' + gmapsUrl + '" target="_blank">📍 Map Pin</a>' +
             '<a href="' + navUrl + '" target="_blank">🧭 Navigate →</a>' +
           '</div>';
         cards.appendChild(card);
