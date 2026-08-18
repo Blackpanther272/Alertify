@@ -1537,7 +1537,7 @@ app.put("/api/admin/profile", async (req, res) => {
   }
 });
 
-// ================= SAFE ZONES ROUTE (100% Reliable, 10km Radius & Sorted) =================
+// ================= SAFE ZONES ROUTE (100% OSM Data - Strict 10km & Sorted) =================
 app.get("/api/safe-zones", async (req, res) => {
   const { lat, lng } = req.query;
   if (!lat || !lng) return res.status(400).json({ message: "Latitude and longitude required" });
@@ -1546,7 +1546,6 @@ app.get("/api/safe-zones", async (req, res) => {
   const userLng = parseFloat(lng);
   let elements = [];
 
-  // Haversine distance calculator in KM
   function calculateDistance(lat1, lon1, lat2, lon2) {
     const R = 6371;
     const dLat = (lat2 - lat1) * (Math.PI / 180);
@@ -1557,8 +1556,8 @@ app.get("/api/safe-zones", async (req, res) => {
     return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   }
 
+  // 1. Fetch Registered Shelters from MongoDB
   try {
-    // 1. Fetch DB Shelters
     if (typeof Shelter !== "undefined") {
       const dbShelters = await Shelter.find({}).lean();
       dbShelters.forEach(s => {
@@ -1566,98 +1565,77 @@ app.get("/api/safe-zones", async (req, res) => {
           const sLat = parseFloat(s.latitude);
           const sLon = parseFloat(s.longitude);
           const dist = calculateDistance(userLat, userLng, sLat, sLon);
-          if (dist <= 15) {
+          if (dist <= 10) {
             elements.push({
               lat: sLat,
               lon: sLon,
               distance: dist,
-              tags: { name: s.name, amenity: "shelter", phone: s.contactPhone || "" }
+              tags: { name: s.name || "Cyclone Relief Shelter", amenity: "shelter", phone: s.contactPhone || "" }
             });
           }
         }
       });
     }
+  } catch (err) {}
 
-    // 2. Fetch all emergency categories around the user's coordinates
-    const categories = [
-      { q: "hospital", amenity: "hospital" },
-      { q: "clinic", amenity: "clinic" },
-      { q: "police station", amenity: "police" },
-      { q: "fire station", amenity: "fire_station" },
-      { q: "health centre", amenity: "clinic" }
-    ];
+  // 2. Query Official OpenStreetMap Overpass API (Strict 10km radius)
+  try {
+    const overpassQuery = `
+      [out:json][timeout:20];
+      (
+        node["amenity"~"hospital|clinic|police|fire_station|shelter"](around:10000,${userLat},${userLng});
+        way["amenity"~"hospital|clinic|police|fire_station|shelter"](around:10000,${userLat},${userLng});
+        node["emergency"~"shelter|disaster_help_point|fire_extinguisher"](around:10000,${userLat},${userLng});
+        way["emergency"~"shelter|disaster_help_point"](around:10000,${userLat},${userLng});
+      );
+      out center;
+    `;
 
-    const delta = 0.12; // ~12 km bounding box
-    const bbox = `${userLng - delta},${userLat + delta},${userLng + delta},${userLat - delta}`;
+    const osmRes = await axios.post("https://overpass-api.de/api/interpreter", overpassQuery, {
+      headers: { 
+        "Content-Type": "text/plain",
+        "User-Agent": "DisasterManagementSafeZones/1.0 (contact@disasterapp.org)"
+      },
+      timeout: 12000
+    });
 
-    await Promise.all(
-      categories.map(c =>
-        axios.get(`https://photon.komoot.io/api/?q=${encodeURIComponent(c.q)}&lat=${userLat}&lon=${userLng}&bbox=${bbox}&limit=30`, { timeout: 4500 })
-          .then(r => {
-            if (r.data && Array.isArray(r.data.features)) {
-              r.data.features.forEach(f => {
-                if (f.geometry?.coordinates) {
-                  const pLon = f.geometry.coordinates[0];
-                  const pLat = f.geometry.coordinates[1];
-                  const dist = calculateDistance(userLat, userLng, pLat, pLon);
-
-                  if (dist <= 12) {
-                    const placeName = f.properties.name || f.properties.street || "";
-                    if (placeName) {
-                      elements.push({
-                        lat: pLat,
-                        lon: pLon,
-                        distance: dist,
-                        tags: { name: placeName, amenity: c.amenity }
-                      });
-                    }
-                  }
-                }
-              });
-            }
-          })
-          .catch(() => {})
-      )
-    );
-
-    // 3. Fallback: If external APIs time out, provide local Odisha emergency hub locations
-    if (elements.length === 0) {
-      const emergencyFallbacks = [
-        { name: "Capital Hospital", lat: 20.2638, lon: 85.8315, amenity: "hospital" },
-        { name: "AIIMS Hospital Bhubaneswar", lat: 20.2312, lon: 85.7725, amenity: "hospital" },
-        { name: "KIMS Super Speciality Hospital", lat: 20.3541, lon: 85.8178, amenity: "hospital" },
-        { name: "Saheed Nagar Police Station", lat: 20.2891, lon: 85.8436, amenity: "police" },
-        { name: "Khandagiri Police Station", lat: 20.2589, lon: 85.7876, amenity: "police" },
-        { name: "Kalpana Fire Station", lat: 20.2570, lon: 85.8390, amenity: "fire_station" },
-        { name: "Bhubaneswar Central Cyclone Shelter", lat: 20.2961, lon: 85.8245, amenity: "shelter" }
-      ];
-
-      emergencyFallbacks.forEach(fb => {
-        const dist = calculateDistance(userLat, userLng, fb.lat, fb.lon);
-        elements.push({
-          lat: fb.lat,
-          lon: fb.lon,
-          distance: dist,
-          tags: { name: fb.name, amenity: fb.amenity }
-        });
+    if (osmRes.data && Array.isArray(osmRes.data.elements)) {
+      osmRes.data.elements.forEach(item => {
+        const pLat = item.lat || (item.center && item.center.lat);
+        const pLon = item.lon || (item.center && item.center.lon);
+        if (pLat && pLon) {
+          const dist = calculateDistance(userLat, userLng, pLat, pLon);
+          if (dist <= 10) {
+            const tags = item.tags || {};
+            const amenityType = tags.amenity || tags.emergency || "shelter";
+            const name = tags.name || tags["name:en"] || tags["name:or"] || amenityType.replace(/_/g, " ").toUpperCase();
+            
+            elements.push({
+              lat: pLat,
+              lon: pLon,
+              distance: dist,
+              tags: { name: name, amenity: amenityType }
+            });
+          }
+        }
       });
     }
-
-    // 4. De-duplicate entries
-    const uniqueMap = new Map();
-    elements.forEach(item => {
-      const key = `${item.lat.toFixed(3)}_${item.lon.toFixed(3)}`;
-      if (!uniqueMap.has(key)) uniqueMap.set(key, item);
-    });
-    elements = Array.from(uniqueMap.values());
-
-    // 5. Strict sort by nearest distance first
-    elements.sort((a, b) => a.distance - b.distance);
-
-    return res.json({ elements });
-  } catch (err) {
-    return res.json({ elements: [] });
+  } catch (osmErr) {
+    console.error("OSM Overpass query error:", osmErr.message);
   }
+
+  // 3. Remove duplicate entries
+  const uniqueMap = new Map();
+  elements.forEach(item => {
+    const key = `${item.lat.toFixed(4)}_${item.lon.toFixed(4)}`;
+    if (!uniqueMap.has(key)) uniqueMap.set(key, item);
+  });
+  elements = Array.from(uniqueMap.values());
+
+  // 4. Strict Sort: Nearest first (0.1 km -> 10.0 km)
+  elements.sort((a, b) => a.distance - b.distance);
+
+  return res.json({ elements });
 });
 // ================= START SERVER =================
 const PORT = process.env.PORT || 5000;
