@@ -379,19 +379,33 @@ function showToast(msg, isSuccess = true) {
   setTimeout(() => { if (toast) toast.remove(); }, 3000);
 }
 
-// 🔐 Fast Login
 async function doLogin() {
   const identifier = document.getElementById("loginUser").value.trim();
   const password   = document.getElementById("loginPass").value;
 
-  if (!identifier) { showToast("⚠️ Enter your Email or Mobile Number", false); return; }
-  if (!password)   { showToast("⚠️ Please enter your password", false); return; }
+  if (!identifier) { 
+    showToast("⚠️ Enter your Email or 10-digit Mobile Number", false); 
+    return; 
+  }
+  if (!password) { 
+    showToast("⚠️ Please enter your password", false); 
+    return; 
+  }
 
   if (identifier.startsWith("ADM")) {
-    showToast("⚠️ This is an Admin ID. Please use the Admin Login page.", false); return;
+    showToast("⚠️ Admin ID detected. Please use the Admin Login page.", false); 
+    return;
   }
-  if (!identifier.includes("@") && !/^[0-9]{10}$/.test(identifier)) {
-    showToast("⚠️ Enter a valid Email or 10-digit Phone Number", false); return;
+
+  // 1. Check if valid email structure
+  const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+
+  // 2. Check if exactly 10 digits (accepts ANY 10 digits like 2222222222)
+  const isTenDigitNumber = /^\d{10}$/.test(identifier);
+
+  if (!isEmail && !isTenDigitNumber) {
+    showToast("⚠️ Enter a valid Email address or an exact 10-digit Mobile Number.", false);
+    return;
   }
 
   try {
@@ -405,9 +419,13 @@ async function doLogin() {
     });
     const data = await res.json();
 
-    if (!res.ok) { showToast("❌ " + (data.message || "Login failed"), false); return; }
+    if (!res.ok) { 
+      showToast("❌ " + (data.message || "Login failed"), false); 
+      return; 
+    }
     if (!data.user || data.user.role !== "user") {
-      showToast("❌ Invalid role. Citizens only.", false); return;
+      showToast("❌ Invalid role. Citizens only.", false); 
+      return;
     }
 
     localStorage.setItem("token", data.token);
@@ -424,6 +442,13 @@ async function doLogin() {
     showToast("❌ Server connection error", false);
   }
 }
+
+
+
+
+
+
+
 window.addEventListener("pageshow", function () {
   const userField = document.getElementById("loginUser");
   const passField = document.getElementById("loginPass");
