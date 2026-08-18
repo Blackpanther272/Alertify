@@ -7,11 +7,11 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
-  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f4f7fb; color: #1e293b; min-height: 100vh; }
+  body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f8fafc; color: #1e293b; min-height: 100vh; display: flex; flex-direction: column; }
     header { background: #0f172a; border-bottom: 1px solid #1e293b; color: white; padding: 14px 24px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px; }
     header h1 { font-size: 18px; font-weight: 700; color: #ffffff; }
     header a { color: #93c5fd; text-decoration: none; font-size: 14px; font-weight: 600; }
-    .page-wrap { padding: 24px 16px; max-width: 1100px; margin: 0 auto; }
+    .page-wrap { padding: 24px 16px; max-width: 1100px; width: 100%; margin: 0 auto; flex: 1; }
     h2 { font-size: 22px; color: #1e3a8a; margin-bottom: 6px; font-weight: 800; }
     .sub { color: #64748b; font-size: 14px; margin-bottom: 24px; }
     #permScreen { text-align: center; padding: 48px 28px; background: #ffffff; border-radius: 24px; box-shadow: 0 10px 40px rgba(15,23,42,0.08); border: 1px solid #e2e8f0; max-width: 580px; margin: 30px auto 0; }
@@ -31,7 +31,7 @@
     .sz-card h4 { font-size: 14.5px; margin-bottom: 6px; color: #0f172a; font-weight: 700; }
     .sz-card p { font-size: 13px; color: #64748b; margin: 2px 0 12px; }
     .sz-card a { font-size: 12.5px; color: #2563eb; font-weight: 700; text-decoration: none; background: #f1f5f9; padding: 6px 12px; border-radius: 8px; border: 1px solid #e2e8f0; margin-right: 8px; }
-    
+    footer { text-align: center; color: #64748b; font-size: 13px; padding: 24px; width: 100%; background: #f8fafc; margin-top: auto; }
     @media(max-width:600px){#safeMap{height:260px;}.page-wrap{padding:10px;}.cards{grid-template-columns:1fr;}}
   </style>
 </head>
@@ -256,16 +256,16 @@ async function loadSafeZones(lat, lng) {
       });
     }
 
-    /* ── MANUAL GOOGLE MAPS FALLBACK ─────────────────────────── */
+   /* ── MANUAL GOOGLE MAPS FALLBACK ─────────────────────────── */
     function showManualLinks() {
-      var c = map ? map.getCenter() : { lat: 0, lng: 0 };
+      var c = map ? map.getCenter() : { lat: 20.2961, lng: 85.8245 };
       var lat = c.lat.toFixed(4), lng = c.lng.toFixed(4);
       var html =
-        '<div style="display:flex;flex-direction:column;gap:8px;margin-top:10px;">' +
-        '<a href="https://www.google.com/maps/search/cyclone+shelter/@' + lat + ',' + lng + ',12z" target="_blank" style="padding:10px;background:#7c3aed;color:white;border-radius:8px;text-decoration:none;font-weight:600;text-align:center;">🏠 Search Cyclone Shelters on Google Maps</a>' +
-        '<a href="https://www.google.com/maps/search/hospital/@' + lat + ',' + lng + ',13z" target="_blank" style="padding:10px;background:#dc2626;color:white;border-radius:8px;text-decoration:none;font-weight:600;text-align:center;">🏥 Search Hospitals on Google Maps</a>' +
-        '<a href="https://www.google.com/maps/search/police+station/@' + lat + ',' + lng + ',13z" target="_blank" style="padding:10px;background:#2563eb;color:white;border-radius:8px;text-decoration:none;font-weight:600;text-align:center;">👮 Search Police on Google Maps</a>' +
-        '<a href="https://www.google.com/maps/search/fire+station/@' + lat + ',' + lng + ',13z" target="_blank" style="padding:10px;background:#ea580c;color:white;border-radius:8px;text-decoration:none;font-weight:600;text-align:center;">🚒 Search Fire Stations on Google Maps</a>' +
+        '<div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 14px; margin-top: 16px; width: 100%;">' +
+          '<a href="https://www.google.com/maps/search/cyclone+shelter/@' + lat + ',' + lng + ',12z" target="_blank" style="padding:16px; background:linear-gradient(135deg, #8b5cf6, #7c3aed); color:white; border-radius:12px; text-decoration:none; font-weight:700; font-size:14.5px; text-align:center; box-shadow:0 6px 16px rgba(124,58,237,0.25);">🏠 Search Cyclone Shelters</a>' +
+          '<a href="https://www.google.com/maps/search/hospital/@' + lat + ',' + lng + ',13z" target="_blank" style="padding:16px; background:linear-gradient(135deg, #ef4444, #dc2626); color:white; border-radius:12px; text-decoration:none; font-weight:700; font-size:14.5px; text-align:center; box-shadow:0 6px 16px rgba(220,38,38,0.25);">🏥 Search Hospitals</a>' +
+          '<a href="https://www.google.com/maps/search/police+station/@' + lat + ',' + lng + ',13z" target="_blank" style="padding:16px; background:linear-gradient(135deg, #3b82f6, #2563eb); color:white; border-radius:12px; text-decoration:none; font-weight:700; font-size:14.5px; text-align:center; box-shadow:0 6px 16px rgba(37,99,235,0.25);">👮 Search Police Stations</a>' +
+          '<a href="https://www.google.com/maps/search/fire+station/@' + lat + ',' + lng + ',13z" target="_blank" style="padding:16px; background:linear-gradient(135deg, #f97316, #ea580c); color:white; border-radius:12px; text-decoration:none; font-weight:700; font-size:14.5px; text-align:center; box-shadow:0 6px 16px rgba(234,88,12,0.25);">🚒 Search Fire Stations</a>' +
         '</div>';
       document.getElementById('szCards').innerHTML = html;
     }
