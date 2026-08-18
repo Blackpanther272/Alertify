@@ -11,20 +11,8 @@ const multer  = require("multer");
 const fs      = require("fs");
 const axios   = require("axios");
 const rateLimit = require("express-rate-limit");
-const nodemailer = require("nodemailer");
-
-const transporter = nodemailer.createTransport({
-  host: "smtp.gmail.com",
-  port: 587,
-  secure: false,
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
-  tls: {
-    rejectUnauthorized: false
-  }
-});
+const { Resend } = require("resend");
+const resend = new Resend(process.env.RESEND_API_KEY);
 
 
 
@@ -445,14 +433,19 @@ app.post("/api/admin/resend-login-otp", otpLimiter, async (req, res) => {
     setOtp("admin-login", user.adminId, otp);
 
     console.log(`[RESEND OTP] Code for ${user.adminId} is: ${otp}`);
-    try {
-      await transporter.sendMail({
-        from: `"Alertify Command Center" <${process.env.EMAIL_USER}>`,
+    resend.emails.send({
+        from: "Alertify Command Center <onboarding@resend.dev>",
         to: user.email,
-        subject: "🛡️ New Admin Login Code",
-        html: `<p>Your new OTP for <strong>${user.adminId}</strong> is: <h2>${otp}</h2></p>`
-      });
-    } catch (mailErr) {}
+        subject: "🛡️ Admin 2FA Login Code",
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; max-width: 480px;">
+            <h2 style="color: #7c3aed; margin-top: 0;">Admin Security Verification</h2>
+            <p>Your login OTP for Admin ID <strong>${user.adminId}</strong> is:</p>
+            <h1 style="font-size: 32px; letter-spacing: 6px; color: #1e293b; background: #f5f3ff; padding: 12px; border-radius: 8px; text-align: center;">${otp}</h1>
+            <p style="color: #64748b; font-size: 13px;">Expires in 5 minutes.</p>
+          </div>
+        `
+      }).catch(err => console.error("Resend API error:", err.message));
 
     res.json({ message: "New OTP sent to your registered email." });
   } catch (err) {
