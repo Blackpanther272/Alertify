@@ -276,11 +276,12 @@
 
       // Fallback clean parsing system avoids Content-Type header rejection chains
       try {
-        console.log("Connecting directly to French OpenStreetMap Node...");
-        let response = await fetch('https://overpass.openstreetmap.fr/api/interpreter', {
-          method: 'POST',
-          body: 'data=' + encodeURIComponent(query)
-        });
+        console.log("Connecting to standard Overpass API...");
+let response = await fetch('https://overpass-api.de/api/interpreter', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+  body: 'data=' + encodeURIComponent(query)
+});
 
         if (!response.ok) throw new Error("French engine shifted");
         
