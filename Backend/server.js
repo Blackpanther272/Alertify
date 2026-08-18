@@ -1537,74 +1537,99 @@ app.put("/api/admin/profile", async (req, res) => {
   }
 });
 
-// ================= SAFE ZONES (Comprehensive Multi-Category) =================
+// ================= SAFE ZONES (OpenStreetMap Overpass - 10km Radius & Sorted) =================
 app.get("/api/safe-zones", async (req, res) => {
   const { lat, lng } = req.query;
-  if (!lat || !lng) {
-    return res.status(400).json({ message: "Latitude and longitude required" });
-  }
+  if (!lat || !lng) return res.status(400).json({ message: "Latitude and longitude required" });
 
   const userLat = parseFloat(lat);
   const userLng = parseFloat(lng);
-  const elements = [];
+  let elements = [];
+
+  // Haversine distance calculator in KM
+  function calculateDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371;
+    const dLat = (lat2 - lat1) * (Math.PI / 180);
+    const dLon = (lon2 - lon1) * (Math.PI / 180);
+    const a = Math.sin(dLat / 2) ** 2 +
+              Math.cos(lat1 * (Math.PI / 180)) * Math.cos(lat2 * (Math.PI / 180)) *
+              Math.sin(dLon / 2) ** 2;
+    return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  }
 
   try {
-    // 1. Fetch all registered shelters from your database
+    // 1. Fetch DB Shelters
     if (typeof Shelter !== "undefined") {
       const dbShelters = await Shelter.find({}).lean();
       dbShelters.forEach(s => {
         if (s.latitude && s.longitude) {
-          elements.push({
-            lat: parseFloat(s.latitude),
-            lon: parseFloat(s.longitude),
-            tags: {
-              name: s.name || "Relief Shelter",
-              amenity: "shelter",
-              phone: s.contactPhone || ""
-            }
-          });
+          const sLat = parseFloat(s.latitude);
+          const sLon = parseFloat(s.longitude);
+          const dist = calculateDistance(userLat, userLng, sLat, sLon);
+          if (dist <= 10) {
+            elements.push({
+              lat: sLat,
+              lon: sLon,
+              distance: dist,
+              tags: { name: s.name, amenity: "shelter", phone: s.contactPhone || "" }
+            });
+          }
         }
       });
     }
 
-    // 2. Fetch all emergency categories from Photon OSM (Hospitals, Police, Fire, Clinics)
-    const queries = [
-      { q: "hospital", amenity: "hospital" },
-      { q: "police", amenity: "police" },
-      { q: "fire station", amenity: "fire_station" },
-      { q: "clinic", amenity: "clinic" }
-    ];
+    // 2. Query Official OpenStreetMap Overpass API (Strict 10,000 meters / 10km radius)
+    const overpassQuery = `
+      [out:json][timeout:15];
+      (
+        node["amenity"~"hospital|clinic|police|fire_station|shelter"](around:10000,${userLat},${userLng});
+        way["amenity"~"hospital|clinic|police|fire_station|shelter"](around:10000,${userLat},${userLng});
+      );
+      out center;
+    `;
 
-    const fetchPromises = queries.map(item =>
-      axios.get(`https://photon.komoot.io/api/?q=${encodeURIComponent(item.q)}&lat=${userLat}&lon=${userLng}&limit=25`, { timeout: 5000 })
-        .then(response => {
-          if (response.data && Array.isArray(response.data.features)) {
-            response.data.features.forEach(f => {
-              if (f.geometry && f.geometry.coordinates) {
-                elements.push({
-                  lat: f.geometry.coordinates[1],
-                  lon: f.geometry.coordinates[0],
-                  tags: {
-                    name: f.properties.name || f.properties.street || `${item.amenity.replace('_', ' ').toUpperCase()}`,
-                    amenity: item.amenity
-                  }
-                });
-              }
+    const osmRes = await axios.post("https://overpass-api.de/api/interpreter", overpassQuery, {
+      headers: { "Content-Type": "text/plain" },
+      timeout: 10000
+    });
+
+    if (osmRes.data && Array.isArray(osmRes.data.elements)) {
+      osmRes.data.elements.forEach(item => {
+        const pLat = item.lat || (item.center && item.center.lat);
+        const pLon = item.lon || (item.center && item.center.lon);
+        if (pLat && pLon) {
+          const dist = calculateDistance(userLat, userLng, pLat, pLon);
+          if (dist <= 10) {
+            const tags = item.tags || {};
+            const name = tags.name || tags["name:en"] || tags["name:or"] || tags.amenity.replace('_', ' ').toUpperCase();
+            elements.push({
+              lat: pLat,
+              lon: pLon,
+              distance: dist,
+              tags: { name: name, amenity: tags.amenity || "shelter" }
             });
           }
-        })
-        .catch(() => {})
-    );
+        }
+      });
+    }
 
-    await Promise.all(fetchPromises);
+    // 3. Remove duplicate entries sharing exact coordinates
+    const uniqueMap = new Map();
+    elements.forEach(item => {
+      const key = `${item.lat.toFixed(4)}_${item.lon.toFixed(4)}`;
+      if (!uniqueMap.has(key)) uniqueMap.set(key, item);
+    });
+    elements = Array.from(uniqueMap.values());
+
+    // 4. Sort strictly from nearest to farthest (e.g., 0.2 km -> 10 km)
+    elements.sort((a, b) => a.distance - b.distance);
 
     return res.json({ elements });
   } catch (err) {
-    console.error("Safe zones error:", err.message);
-    return res.json({ elements: [] });
+    console.error("OSM Overpass error:", err.message);
+    return res.json({ elements });
   }
 });
-
 // ================= START SERVER =================
 const PORT = process.env.PORT || 5000;
 (async () => {
