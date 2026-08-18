@@ -1544,8 +1544,9 @@ app.get("/api/safe-zones", async (req, res) => {
     return res.status(400).json({ message: "Latitude and longitude required" });
   }
 
-  const radius = 10000;
-  const query = `[out:json][timeout:25];(node["emergency"="shelter"](around:${radius},${lat},${lng});way["emergency"="shelter"](around:${radius},${lat},${lng});node["amenity"="shelter"](around:${radius},${lat},${lng});node["amenity"="hospital"](around:${radius},${lat},${lng});way["amenity"="hospital"](around:${radius},${lat},${lng});node["amenity"="clinic"](around:${radius},${lat},${lng});node["amenity"="health_post"](around:${radius},${lat},${lng});node["amenity"="police"](around:${radius},${lat},${lng});node["amenity"="fire_station"](around:${radius},${lat},${lng});node["building"="hospital"](around:${radius},${lat},${lng});node["healthcare"="hospital"](around:${radius},${lat},${lng}););out center;`;
+  // 5km radius + essential emergency services = fast response under 2 seconds
+  const radius = 5000;
+  const query = `[out:json][timeout:15];(node["amenity"~"hospital|shelter|police|fire_station"](around:${radius},${lat},${lng});node["emergency"="shelter"](around:${radius},${lat},${lng});way["amenity"~"hospital|shelter|police|fire_station"](around:${radius},${lat},${lng}););out center 50;`;
 
   const servers = [
     "https://overpass-api.de/api/interpreter",
@@ -1564,12 +1565,13 @@ app.get("/api/safe-zones", async (req, res) => {
         const data = await response.json();
         return res.json(data);
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn("Server attempt failed:", server);
+    }
   }
 
   res.status(502).json({ message: "Could not fetch safe zones" });
 });
-
 
 
 // ================= START SERVER =================
