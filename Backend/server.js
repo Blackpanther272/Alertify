@@ -532,9 +532,9 @@ app.post("/api/admin/send-register-otp", otpLimiter, async (req, res) => {
 
     console.log(`[REGISTRATION OTP] Code for ${email} is: ${otp}`);
 
-    try {
-      await transporter.sendMail({
-        from: `"Alertify Security" <${process.env.EMAIL_USER}>`,
+  try {
+      await resend.emails.send({
+        from: "Alertify Security <onboarding@resend.dev>",
         to: email.trim(),
         subject: "🛡️ Admin Registration Verification Code",
         html: `
@@ -547,7 +547,7 @@ app.post("/api/admin/send-register-otp", otpLimiter, async (req, res) => {
         `
       });
     } catch (mailErr) {
-      console.error("Email send failed:", mailErr.message);
+      console.error("Resend API failed:", mailErr.message);
     }
 
     res.json({ message: "Verification code sent to your email." });
