@@ -269,39 +269,24 @@
       document.getElementById('statusBox').textContent = msg;
     }
 
-    /* ── LOAD SAFE ZONES ── */
-    async function loadSafeZones(lat, lng) {
-  var radius = 10000; 
-  var query = `[out:json][timeout:25];(node["emergency"="shelter"](around:${radius},${lat},${lng});way["emergency"="shelter"](around:${radius},${lat},${lng});node["amenity"="shelter"](around:${radius},${lat},${lng});node["amenity"="hospital"](around:${radius},${lat},${lng});way["amenity"="hospital"](around:${radius},${lat},${lng});node["amenity"="clinic"](around:${radius},${lat},${lng});node["amenity"="health_post"](around:${radius},${lat},${lng});node["amenity"="police"](around:${radius},${lat},${lng});node["amenity"="fire_station"](around:${radius},${lat},${lng});node["building"="hospital"](around:${radius},${lat},${lng});node["healthcare"="hospital"](around:${radius},${lat},${lng}););out center;`;
+   /* ── LOAD SAFE ZONES ── */
+async function loadSafeZones(lat, lng) {
+  const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+  const baseUrl = isLocal ? "http://localhost:5000/api" : "https://alertify-backend-r8le.onrender.com/api";
 
-  const endpoints = [
-    "https://overpass-api.de/api/interpreter?data=",
-    "https://lz4.overpass-api.de/api/interpreter?data=",
-    "https://overpass.kumi.systems/api/interpreter?data="
-  ];
-
-  let success = false;
-
-  for (let base of endpoints) {
-    try {
-      console.log("Fetching map data from:", base);
-      let response = await fetch(base + encodeURIComponent(query));
-      if (!response.ok) throw new Error("Status " + response.status);
-      let data = await response.json();
-      processSafeZoneData(data, lat, lng);
-      success = true;
-      break;
-    } catch (err) {
-      console.warn("Node failed, switching to backup...", err);
-    }
-  }
-
-  if (!success) {
-    setStatus('❌ Network error loading safe zones. Showing Google Maps links below.');
+  try {
+    console.log("Fetching safe zones via backend proxy...");
+    const res = await fetch(`${baseUrl}/safe-zones?lat=${lat}&lng=${lng}`);
+    if (!res.ok) throw new Error("Server returned status " + res.status);
+    
+    const data = await res.json();
+    processSafeZoneData(data, lat, lng);
+  } catch (err) {
+    console.warn("Backend fetch failed, showing fallback links...", err);
+    setStatus('❌ Unable to load live safe zones. Showing Google Maps links below.');
     showManualLinks();
   }
-}
-    
+} 
 
     function processSafeZoneData(data, lat, lng) {
       if (!data.elements || data.elements.length === 0) {
