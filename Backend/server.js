@@ -528,27 +528,24 @@ app.post("/api/admin/send-register-otp", otpLimiter, async (req, res) => {
     }
 
     const otp = Math.floor(100000 + Math.random() * 900000);
-    setOtp("admin-reg", email.trim().toLowerCase(), otp);
+      setOtp("admin-login", user.adminId, otp);
 
-    console.log(`[REGISTRATION OTP] Code for ${email} is: ${otp}`);
+      console.log(`[ADMIN LOGIN OTP] Code for ${user.email} (${user.adminId}) is: ${otp}`);
 
-  try {
-      await resend.emails.send({
-        from: "Alertify Security <onboarding@resend.dev>",
-        to: email.trim(),
-        subject: "🛡️ Admin Registration Verification Code",
+      // Send email via Resend API asynchronously in background
+      resend.emails.send({
+        from: "Alertify Command Center <onboarding@resend.dev>",
+        to: user.email,
+        subject: "🛡️ Admin 2FA Login Code",
         html: `
           <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; max-width: 480px;">
-            <h2 style="color: #7c3aed; margin-top: 0;">Admin Account Setup Verification</h2>
-            <p>Your email verification OTP code is:</p>
+            <h2 style="color: #7c3aed; margin-top: 0;">Admin Security Verification</h2>
+            <p>Your login OTP for Admin ID <strong>${user.adminId}</strong> is:</p>
             <h1 style="font-size: 32px; letter-spacing: 6px; color: #1e293b; background: #f5f3ff; padding: 12px; border-radius: 8px; text-align: center;">${otp}</h1>
-            <p style="color: #64748b; font-size: 13px;">This code is valid for 5 minutes. If you did not request this, please ignore this email.</p>
+            <p style="color: #64748b; font-size: 13px;">Expires in 5 minutes.</p>
           </div>
         `
-      });
-    } catch (mailErr) {
-      console.error("Resend API failed:", mailErr.message);
-    }
+      }).catch(err => console.error("Resend API error:", err.message));
 
     res.json({ message: "Verification code sent to your email." });
   } catch (err) {
