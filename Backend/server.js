@@ -15,23 +15,18 @@ const nodemailer = require("nodemailer");
 
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
-  port: 465,
-  secure: true, // true for port 465, false for other ports
+  port: 587,
+  secure: false,
   auth: {
     user: process.env.EMAIL_USER,
     pass: process.env.EMAIL_PASS
+  },
+  tls: {
+    rejectUnauthorized: false
   }
 });
 
-// Verify SMTP connection immediately on server boot
-transporter.verify((error, success) => {
-  if (error) {
-    console.error("❌ Live SMTP Connection Failed:", error.message);
-    console.log("👉 Check that EMAIL_USER has '@gmail.com' and EMAIL_PASS is a 16-character Google App Password.");
-  } else {
-    console.log("✅ Live Gmail SMTP Server Ready to Deliver OTP Emails!");
-  }
-});
+
 
 const loginLimiter = rateLimit({ windowMs: 15*60*1000, max: 10, message: { message: "Too many login attempts. Try after 15 minutes." }});
 const otpLimiter   = rateLimit({ windowMs: 10*60*1000, max: 5,  message: { message: "Too many OTP requests. Try after 10 minutes." }});
@@ -336,7 +331,7 @@ app.post("/api/register", async (req, res) => {
 });
 
 // ================= USER LOGIN =================
-app.post("/api/login", loginLimiter, async (req, res) => {
+app.post("/api/login", async (req, res) => {
   try {
     const { identifier, password, role } = req.body;
     let user;
@@ -1685,10 +1680,7 @@ app.get("/api/safe-zones", async (req, res) => {
 });
 // ================= START SERVER =================
 const PORT = process.env.PORT || 5000;
-(async () => {
-  await logServerStart();
 
-  app.listen(PORT, () => {
-    console.log("Server running on port", PORT);
-  });
-})();
+app.listen(PORT, () => {
+  console.log("⚡ Server ready on port", PORT);
+});
