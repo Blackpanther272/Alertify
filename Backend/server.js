@@ -1544,35 +1544,41 @@ app.get("/api/safe-zones", async (req, res) => {
     return res.status(400).json({ message: "Latitude and longitude required" });
   }
 
-  // 5km radius + essential emergency services = fast response under 2 seconds
-  const radius = 5000;
-  const query = `[out:json][timeout:15];(node["amenity"~"hospital|shelter|police|fire_station"](around:${radius},${lat},${lng});node["emergency"="shelter"](around:${radius},${lat},${lng});way["amenity"~"hospital|shelter|police|fire_station"](around:${radius},${lat},${lng}););out center 50;`;
+  try {
+    const categories = ["hospital", "police", "fire_station", "shelter"];
+    const results = [];
 
-  const servers = [
-    "https://overpass-api.de/api/interpreter",
-    "https://lz4.overpass-api.de/api/interpreter",
-    "https://overpass.kumi.systems/api/interpreter"
-  ];
+    // Search each emergency category via OpenStreetMap Nominatim
+    for (const cat of categories) {
+      try {
+        const url = `https://nominatim.openstreetmap.org/search?q=${cat}&format=json&limit=8&viewbox=${Number(lng)-0.08},${Number(lat)+0.08},${Number(lng)+0.08},${Number(lat)-0.08}&bounded=1`;
+        const response = await axios.get(url, {
+          headers: { "User-Agent": "AlertifyDisasterApp/1.0" }
+        });
 
-  for (let server of servers) {
-    try {
-      const response = await fetch(server, {
-        method: "POST",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: "data=" + encodeURIComponent(query)
-      });
-      if (response.ok) {
-        const data = await response.json();
-        return res.json(data);
+        if (response.data && Array.isArray(response.data)) {
+          response.data.forEach(item => {
+            results.push({
+              lat: parseFloat(item.lat),
+              lon: parseFloat(item.lon),
+              tags: {
+                name: item.display_name.split(",")[0],
+                amenity: cat
+              }
+            });
+          });
+        }
+      } catch (innerErr) {
+        console.warn(`Category fetch failed for: ${cat}`);
       }
-    } catch (e) {
-      console.warn("Server attempt failed:", server);
     }
+
+    return res.json({ elements: results });
+  } catch (err) {
+    console.error("Safe zones error:", err.message);
+    return res.status(500).json({ message: "Failed to load safe zones" });
   }
-
-  res.status(502).json({ message: "Could not fetch safe zones" });
 });
-
 
 // ================= START SERVER =================
 const PORT = process.env.PORT || 5000;
