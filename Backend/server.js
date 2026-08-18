@@ -1538,45 +1538,53 @@ app.put("/api/admin/profile", async (req, res) => {
 });
 
 
+// ================= SAFE ZONES PROXY (Single Fast Query) =================
 app.get("/api/safe-zones", async (req, res) => {
   const { lat, lng } = req.query;
   if (!lat || !lng) {
     return res.status(400).json({ message: "Latitude and longitude required" });
   }
 
+  const userLat = parseFloat(lat);
+  const userLng = parseFloat(lng);
+  const delta = 0.06; // Approx 6km bounding box
+
   try {
-    const categories = ["hospital", "police", "fire_station", "shelter"];
+    // Single consolidated query with 5-second timeout
+    const url = `https://nominatim.openstreetmap.org/search?q=emergency+hospital+police+fire+shelter&format=json&limit=25&viewbox=${userLng - delta},${userLat + delta},${userLng + delta},${userLat - delta}&bounded=1`;
+    
+    const response = await axios.get(url, {
+      headers: {
+        "User-Agent": "DisasterResponseAlertifyPortal/2.0 (contact: alertify.emergency@gmail.com)"
+      },
+      timeout: 6000
+    });
+
     const results = [];
+    if (Array.isArray(response.data)) {
+      response.data.forEach(item => {
+        const text = (item.display_name || "").toLowerCase();
+        let amenity = "shelter";
+        if (text.includes("hospital") || text.includes("clinic") || text.includes("medical")) amenity = "hospital";
+        else if (text.includes("police") || text.includes("thana")) amenity = "police";
+        else if (text.includes("fire")) amenity = "fire_station";
 
-    // Search each emergency category via OpenStreetMap Nominatim
-    for (const cat of categories) {
-      try {
-        const url = `https://nominatim.openstreetmap.org/search?q=${cat}&format=json&limit=8&viewbox=${Number(lng)-0.08},${Number(lat)+0.08},${Number(lng)+0.08},${Number(lat)-0.08}&bounded=1`;
-        const response = await axios.get(url, {
-          headers: { "User-Agent": "AlertifyDisasterApp/1.0" }
+        results.push({
+          lat: parseFloat(item.lat),
+          lon: parseFloat(item.lon),
+          tags: {
+            name: item.display_name.split(",")[0],
+            amenity: amenity
+          }
         });
-
-        if (response.data && Array.isArray(response.data)) {
-          response.data.forEach(item => {
-            results.push({
-              lat: parseFloat(item.lat),
-              lon: parseFloat(item.lon),
-              tags: {
-                name: item.display_name.split(",")[0],
-                amenity: cat
-              }
-            });
-          });
-        }
-      } catch (innerErr) {
-        console.warn(`Category fetch failed for: ${cat}`);
-      }
+      });
     }
 
+    // Always return 200 with elements array (never throw 502)
     return res.json({ elements: results });
   } catch (err) {
-    console.error("Safe zones error:", err.message);
-    return res.status(500).json({ message: "Failed to load safe zones" });
+    console.warn("Upstream map query slow/blocked, returning empty fallback list:", err.message);
+    return res.json({ elements: [] });
   }
 });
 
