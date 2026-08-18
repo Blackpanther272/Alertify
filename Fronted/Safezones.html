@@ -7,38 +7,33 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css"/>
   <style>
     *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'Segoe UI',sans-serif;background:#f4f7fb;color:#1e293b;}
-    header{background:linear-gradient(135deg,#0f172a,#1e293b);color:white;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+    body{font-family:'Segoe UI',system-ui,sans-serif;background:#0b132b;color:#e2e8f0;}
+header{background:#0f172a;border-bottom:1px solid #1e293b;color:white;padding:14px 20px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;}
+   
     header h1{font-size:17px;}
     header a{color:#93c5fd;text-decoration:none;font-size:14px;}
     .page-wrap{padding:16px;max-width:900px;margin:0 auto;}
     h2{font-size:18px;color:#1e3a8a;margin-bottom:6px;}
     .sub{color:#64748b;font-size:13px;margin-bottom:14px;line-height:1.6;}
-    #permScreen{text-align:center;padding:36px 20px;background:white;border-radius:16px;box-shadow:0 4px 20px rgba(0,0,0,0.08);margin-top:16px;}
-    #permScreen .icon{font-size:56px;margin-bottom:14px;}
-    #permScreen h3{font-size:17px;color:#1e293b;margin-bottom:8px;}
-    #permScreen p{font-size:13px;color:#64748b;margin-bottom:18px;line-height:1.6;}
+    #permScreen{text-align:center;padding:40px 20px;background:#1e293b;border-radius:16px;box-shadow:0 10px 30px rgba(0,0,0,0.4);border:1px solid #334155;margin-top:16px;}
+#permScreen h3{font-size:17px;color:#f8fafc;margin-bottom:8px;}
+#permScreen p{font-size:13px;color:#94a3b8;margin-bottom:18px;line-height:1.6;}
+.sz-card{background:#1e293b;color:#f8fafc;border-radius:10px;padding:12px 14px;border:1px solid #334155;border-left:4px solid #2563eb;box-shadow:0 2px 8px rgba(0,0,0,0.25);}
+.sz-card h4{font-size:13px;margin-bottom:4px;color:#f8fafc;}
+.sz-card p{font-size:12px;color:#94a3b8;margin:2px 0;}
+.sz-card a{font-size:12px;color:#60a5fa;font-weight:600;text-decoration:none;margin-right:8px;}
+#statusBox{padding:10px 14px;background:#1e293b;border-radius:8px;border:1px solid #334155;font-size:13px;color:#cbd5e1;margin-bottom:14px;}
+   
     #allowBtn{background:linear-gradient(135deg,#2563eb,#1d4ed8);color:white;border:none;padding:14px 32px;border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(37,99,235,0.35);}
     #allowBtn:disabled{opacity:.6;cursor:not-allowed;}
-    .village-search{margin-top:20px;padding-top:16px;border-top:1px solid #e2e8f0;}
-    .village-search p{font-size:12px;color:#94a3b8;margin-bottom:8px;}
-    .village-row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;}
-    .village-row input{padding:9px 12px;border:1.5px solid #cbd5e1;border-radius:8px;font-size:13px;width:210px;outline:none;color:#1e293b;}
-    .village-row input:focus{border-color:#2563eb;}
-    .village-row button{padding:9px 14px;background:#7c3aed;color:white;border:none;border-radius:8px;font-size:13px;cursor:pointer;font-weight:600;}
-    .village-row button:disabled{opacity:.6;cursor:not-allowed;}
     #mapScreen{display:none;}
     #safeMap{width:100%;height:420px;border-radius:12px;border:1.5px solid #e2e8f0;margin-bottom:10px;}
-    #statusBox{padding:10px 14px;background:white;border-radius:8px;border:1px solid #e2e8f0;font-size:13px;margin-bottom:14px;}
+    
     .legend{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:14px;font-size:12px;color:#475569;}
     .leg-item{display:flex;align-items:center;gap:5px;}
     .leg-dot{width:12px;height:12px;border-radius:50%;display:inline-block;}
     .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;}
-    .sz-card{background:white;border-radius:10px;padding:12px 14px;border-left:4px solid #2563eb;box-shadow:0 2px 8px rgba(0,0,0,0.07);}
-    .sz-card h4{font-size:13px;margin-bottom:4px;color:#1e293b;}
-    .sz-card p{font-size:12px;color:#64748b;margin:2px 0;}
-    .sz-card a{font-size:12px;color:#2563eb;font-weight:600;text-decoration:none;}
-    footer{text-align:center;color:#94a3b8;font-size:12px;padding:20px;}
+    
     @media(max-width:600px){#safeMap{height:260px;}.page-wrap{padding:10px;}.cards{grid-template-columns:1fr;}}
   </style>
 </head>
@@ -58,20 +53,6 @@
       <button id="allowBtn" onclick="startSafeZones()">📍 Allow Location & Show Map</button>
       <p id="permError" style="color:#dc2626;font-size:13px;margin-top:12px;display:none;"></p>
 
-      <div class="village-search">
-        <p>📶 GPS slow or blocked? Search your village instead:</p>
-        <div class="village-row">
-          <input
-            id="villageInput"
-            placeholder="e.g. Bindipur Puri"
-            onkeydown="if(event.key==='Enter') searchVillage(this.value)"
-          />
-          <button id="villageSearchBtn" onclick="searchVillage(document.getElementById('villageInput').value)">
-            🔍 Search
-          </button>
-        </div>
-        <p style="font-size:11px;color:#94a3b8;margin-top:6px;">Uses OpenStreetMap — free, no account needed</p>
-      </div>
     </div>
 
     <div id="mapScreen">
@@ -119,17 +100,17 @@
       );
     }
 
-    function onLocationError(err) {
-      var btn = document.getElementById('allowBtn');
-      btn.textContent = '📍 Allow Location & Show Map';
-      btn.disabled = false;
-      var msgs = {
-        1: '❌ Location blocked. Tap the lock icon in your browser and allow location. Or use village search below.',
-        2: '❌ GPS unavailable. Move to open area or use village search below.',
-        3: '⚠️ GPS timed out. Move to open area or use village search below.'
-      };
-      showPermError(msgs[err.code] || '❌ Could not get location. Use village search below.');
-    }
+function onLocationError(err) {
+  var btn = document.getElementById('allowBtn');
+  btn.textContent = '📍 Allow Location & Show Map';
+  btn.disabled = false;
+  var msgs = {
+    1: '❌ Location blocked. Tap the lock icon in your browser and allow location.',
+    2: '❌ GPS unavailable. Please move to an open area.',
+    3: '⚠️ GPS timed out. Please try again.'
+  };
+  showPermError(msgs[err.code] || '❌ Could not determine location.');
+}
 
     function showPermError(msg) {
       var el = document.getElementById('permError');
@@ -137,91 +118,7 @@
       el.style.display = 'block';
     }
 
-    /* ── VILLAGE SEARCH ── */
-    async function searchVillage(query) {
-      if (!query || query.trim().length < 2) {
-        alert('Type your village name.\nExample: Bindipur\nExample: Bindipur Puri');
-        return;
-      }
-      var btn = document.getElementById('villageSearchBtn');
-      var errEl = document.getElementById('permError');
-      if (btn) { btn.textContent = '🔍 Searching…'; btn.disabled = true; }
-      if (errEl) errEl.style.display = 'none';
-
-      var q = query.trim();
-      var found = null;
-
-      var nominatimAttempts = [
-        q + ', Puri, Odisha, India',
-        q + ', Odisha, India',
-        q + ', Odisha',
-        q + ', India',
-        q,
-        q.split(' ')[0] + ', Odisha, India',
-      ];
-      for (var attempt of nominatimAttempts) {
-        try {
-          var r = await fetch(
-            'https://nominatim.openstreetmap.org/search?q=' + encodeURIComponent(attempt) +
-            '&format=json&limit=5&countrycodes=in&addressdetails=1',
-            { headers: { 'Accept-Language': 'en', 'User-Agent': 'DisasterApp/1.0' } }
-          );
-          var data = await r.json();
-          if (data && data.length > 0) {
-            found = { lat: parseFloat(data[0].lat), lng: parseFloat(data[0].lon), name: data[0].display_name };
-            break;
-          }
-        } catch(e) {}
-      }
-
-      if (!found) {
-        try {
-          var r2 = await fetch(
-            'https://photon.komoot.io/api/?q=' + encodeURIComponent(q + ' Odisha India') + '&limit=5&lang=en',
-            { headers: { 'User-Agent': 'DisasterApp/1.0' } }
-          );
-          var d2 = await r2.json();
-          if (d2 && d2.features && d2.features.length > 0) {
-            var f = d2.features[0];
-            found = { lat: f.geometry.coordinates[1], lng: f.geometry.coordinates[0], name: f.properties.name + ', ' + (f.properties.state || 'Odisha') };
-          }
-        } catch(e) {}
-      }
-
-      if (btn) { btn.textContent = '🔍 Search'; btn.disabled = false; }
-
-      if (!found) {
-        var words = q.split(' ');
-        var districtGuess = words.length > 1 ? words[words.length - 1] : 'Puri';
-        var fallbackLat = 19.8135, fallbackLng = 85.8312; 
-
-        try {
-          var r4 = await fetch(
-            'https://nominatim.openstreetmap.org/search?q=' +
-            encodeURIComponent(districtGuess + ' district, Odisha, India') + '&format=json&limit=1',
-            { headers: { 'Accept-Language': 'en', 'User-Agent': 'DisasterApp/1.0' } }
-          );
-          var d4 = await r4.json();
-          if (d4 && d4.length > 0) { fallbackLat = parseFloat(d4[0].lat); fallbackLng = parseFloat(d4[0].lon); }
-        } catch(e) {}
-
-        onGotLocation({ coords: { latitude: fallbackLat, longitude: fallbackLng, accuracy: 5000 }, fromSearch: true, name: districtGuess + ' district area' });
-
-        var gmapsUrl = 'https://www.google.com/maps/search/' + encodeURIComponent(q + ' Odisha');
-        setStatus('');
-        document.getElementById('statusBox').innerHTML =
-          '<b style="color:#dc2626;">📍 "' + q + '" not in map database.</b>' +
-          '<br><span style="font-size:12px;color:#64748b;">Showing ' + districtGuess + ' district. Use Google Maps to find your exact village:</span>' +
-          '<div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;">' +
-          '<a href="' + gmapsUrl + '" target="_blank" style="background:#2563eb;color:white;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;text-align:center;display:block;">🔍 Search \"' + q + '\" on Google Maps →</a>' +
-          '<a href="https://www.google.com/maps/search/cyclone+shelter+near+' + encodeURIComponent(q + ' Odisha') + '" target="_blank" style="background:#7c3aed;color:white;padding:10px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:13px;text-align:center;display:block;">🏠 Find Cyclone Shelters near ' + q + ' on Google Maps →</a>' +
-          '</div>';
-
-        return;
-      }
-
-      onGotLocation({ coords: { latitude: found.lat, longitude: found.lng, accuracy: 50 }, fromSearch: true, name: found.name });
-    }
+   
 
     function onGotLocation(pos) {
       document.getElementById('permScreen').style.display = 'none';
@@ -231,8 +128,7 @@
       btn.disabled = false;
       btn.textContent = '✅ Location Found';
 
-      var btn2 = document.getElementById('villageSearchBtn');
-      if (btn2) { btn2.textContent = '🔍 Search'; btn2.disabled = false; }
+      
 
       var lat = pos.coords.latitude;
       var lng = pos.coords.longitude;
@@ -299,76 +195,66 @@ async function loadSafeZones(lat, lng) {
       renderOverpassResults(data.elements, lat, lng);
     }
 
-    /* ── RENDER OVERPASS RESULTS ─────────────────────────────── */
-    function renderOverpassResults(elements, userLat, userLng) {
+   function renderOverpassResults(elements, userLat, userLng) {
       var cards = document.getElementById('szCards');
-      var added = 0;
+      cards.innerHTML = '';
+
+      // Strict nearest-to-farthest sort
+      elements.sort(function(a, b) {
+        return (a.distance || 0) - (b.distance || 0);
+      });
 
       elements.forEach(function(place) {
-        var pLat = place.lat || (place.center && place.center.lat);
-        var pLng = place.lon || (place.center && place.center.lon);
+        var pLat = place.lat;
+        var pLng = place.lon;
         if (!pLat || !pLng) return;
 
         var tags = place.tags || {};
-        var name = tags.name || tags['name:en'] || tags['name:or'] || tags['name:hi'] || 'Unknown';
-        var amenity = tags.amenity || tags.emergency || tags.healthcare || tags.building || 'place';
+        var name = tags.name || 'Emergency Center';
+        var amenity = tags.amenity || 'shelter';
 
-        var color = '#64748b', emoji = '📍', label = 'Safe Zone', priority = 5;
+        var color = '#64748b', emoji = '📍', label = 'Safe Zone';
 
-        if (amenity === 'shelter' || tags.emergency === 'shelter') {
-          color = '#7c3aed'; emoji = '🏠'; label = 'Govt Cyclone Shelter'; priority = 1;
-        } else if (amenity === 'hospital' || tags.healthcare === 'hospital' || tags.building === 'hospital') {
-          color = '#dc2626'; emoji = '🏥'; label = 'Hospital'; priority = 2;
+        if (amenity === 'shelter') {
+          color = '#a855f7'; emoji = '🏠'; label = 'Cyclone Shelter';
+        } else if (amenity === 'hospital') {
+          color = '#ef4444'; emoji = '🏥'; label = 'Hospital / Emergency';
         } else if (amenity === 'clinic' || amenity === 'health_post') {
-          color = '#0891b2'; emoji = '🏨'; label = 'Health Centre'; priority = 3;
+          color = '#06b6d4'; emoji = '🏨'; label = 'Health Centre';
         } else if (amenity === 'police') {
-          color = '#2563eb'; emoji = '👮'; label = 'Police Station'; priority = 2;
+          color = '#3b82f6'; emoji = '👮'; label = 'Police Station';
         } else if (amenity === 'fire_station') {
-          color = '#ea580c'; emoji = '🚒'; label = 'Fire Station'; priority = 3;
+          color = '#f97316'; emoji = '🚒'; label = 'Fire Station';
         }
 
-        var dLat = (pLat - userLat) * 111;
-        var dLng = (pLng - userLng) * 111 * Math.cos(userLat * Math.PI / 180);
-        var distKm = Math.sqrt(dLat * dLat + dLng * dLng).toFixed(1);
+        var distKm = (place.distance !== undefined) ? place.distance.toFixed(1) : (
+          Math.sqrt(((pLat - userLat) * 111) ** 2 + ((pLng - userLng) * 111 * Math.cos(userLat * Math.PI / 180)) ** 2).toFixed(1)
+        );
 
         var icon = L.divIcon({
           className: '',
-          html: '<div style="background:' + color + ';color:white;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,0.3);">' + emoji + '</div>',
+          html: '<div style="background:' + color + ';color:white;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:16px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,0.5);">' + emoji + '</div>',
           iconSize: [32, 32], iconAnchor: [16, 16]
         });
 
         var gmapsUrl = 'https://maps.google.com/?q=' + pLat + ',' + pLng;
-        var navUrl   = 'https://maps.google.com/maps?saddr=My+Location&daddr=' + pLat + ',' + pLng;
+        var navUrl = 'https://www.google.com/maps/dir/?api=1&destination=' + pLat + ',' + pLng;
 
         L.marker([pLat, pLng], { icon: icon }).addTo(map)
-          .bindPopup(
-            '<strong>' + emoji + ' ' + name + '</strong><br>' +
-            label + '<br>~' + distKm + ' km away<br>' +
-            '<a href="' + gmapsUrl + '" target="_blank">📍 View on Google Maps</a>  ' +
-            '<a href="' + navUrl + '" target="_blank">🧭 Navigate</a>'
-          );
+          .bindPopup('<strong>' + emoji + ' ' + name + '</strong><br>' + label + '<br><b>~' + distKm + ' km away</b><br><a href="' + navUrl + '" target="_blank" style="color:#60a5fa;">🧭 Get Directions</a>');
 
         var card = document.createElement('div');
         card.className = 'sz-card';
         card.style.borderLeftColor = color;
-        card.dataset.priority = priority;
         card.innerHTML =
           '<h4>' + emoji + ' ' + name + '</h4>' +
-          '<p>' + label + ' · ~' + distKm + ' km</p>' +
-          '<a href="' + gmapsUrl + '" target="_blank">📍 Google Maps</a>  ' +
-          '<a href="' + navUrl + '" target="_blank">🧭 Navigate</a>';
+          '<p>' + label + ' · <strong style="color:#60a5fa;">~' + distKm + ' km away</strong></p>' +
+          '<div style="display:flex;gap:8px;margin-top:8px;">' +
+            '<a href="' + gmapsUrl + '" target="_blank" style="font-size:12px;color:#60a5fa;text-decoration:none;background:#0f172a;padding:5px 8px;border-radius:6px;border:1px solid #334155;">📍 Map Pin</a>' +
+            '<a href="' + navUrl + '" target="_blank" style="font-size:12px;color:#60a5fa;text-decoration:none;background:#0f172a;padding:5px 8px;border-radius:6px;border:1px solid #334155;">🧭 Navigate →</a>' +
+          '</div>';
         cards.appendChild(card);
-        added++;
       });
-
-      var cardNodes = Array.from(cards.querySelectorAll('.sz-card'));
-      cardNodes.sort(function(a, b) { return a.dataset.priority - b.dataset.priority; });
-      cardNodes.forEach(function(c) { cards.appendChild(c); });
-
-      if (added === 0) {
-        setStatus('⚠️ No placeable safe zones found. Try the Google Maps links below.');
-        showManualLinks();
-      }
     }
 
     /* ── MANUAL GOOGLE MAPS FALLBACK ─────────────────────────── */
