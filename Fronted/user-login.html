@@ -203,8 +203,7 @@ body:has(.auth-card) {
   </style>
 </head>
 <body>
-<!-- Add inside <body> at the top -->
-<button id="themeToggle" class="global-theme-btn" title="Toggle Theme">🌙</button>
+
 <!-- Pre-login SOS -->
 <div style="padding-top:24px;">
   <button class="sos-btn-top" onclick="preLoginSOS()" data-i18n="sosBtnLabel">🆘 EMERGENCY SOS — No Login Needed</button>
@@ -225,7 +224,7 @@ body:has(.auth-card) {
   <h2>Welcome Back</h2>
   <p class="subtitle">Enter your credentials to access live disaster response and relief services</p>
 
-  <input type="text" id="loginUser" placeholder="Email or 10-digit Mobile Number" autocomplete="off" />
+  <input type="text" id="loginUser" placeholder="Email or 10-digit Mobile Number" autocomplete="off" oninput="handleIdentifierInput(this)" />
 
 <div class="password-wrapper">
   <input type="password" id="loginPass" placeholder="Password" autocomplete="new-password" />
@@ -379,6 +378,18 @@ function showToast(msg, isSuccess = true) {
   setTimeout(() => { if (toast) toast.remove(); }, 3000);
 }
 
+function handleIdentifierInput(input) {
+  const val = input.value.trim();
+  if (/^\d+$/.test(val)) {
+    input.value = val.slice(0, 10);
+    input.setAttribute("maxlength", "10");
+    input.setAttribute("inputmode", "numeric");
+  } else {
+    input.removeAttribute("maxlength");
+    input.setAttribute("inputmode", "text");
+  }
+}
+
 async function doLogin() {
   const identifier = document.getElementById("loginUser").value.trim();
   const password   = document.getElementById("loginPass").value;
@@ -397,14 +408,14 @@ async function doLogin() {
     return;
   }
 
-  // 1. Check if valid email structure
+  // Strict email validation
   const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
 
-  // 2. Check if exactly 10 digits (accepts ANY 10 digits like 2222222222)
-  const isTenDigitNumber = /^\d{10}$/.test(identifier);
+  // Strict Indian 10-digit mobile number validation (starts with 6, 7, 8, or 9)
+  const isTenDigitNumber = /^[6-9]\d{9}$/.test(identifier);
 
   if (!isEmail && !isTenDigitNumber) {
-    showToast("⚠️ Enter a valid Email address or an exact 10-digit Mobile Number.", false);
+    showToast("⚠️ Enter a valid Email address or a valid 10-digit Mobile Number (starting with 6-9).", false);
     return;
   }
 
