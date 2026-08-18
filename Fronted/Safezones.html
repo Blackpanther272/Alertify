@@ -271,44 +271,37 @@
 
     /* ── LOAD SAFE ZONES ── */
     async function loadSafeZones(lat, lng) {
-      var radius = 10000; 
-      var query = `[out:json][timeout:30];(node["emergency"="shelter"](around:${radius},${lat},${lng});way["emergency"="shelter"](around:${radius},${lat},${lng});node["amenity"="shelter"](around:${radius},${lat},${lng});node["amenity"="hospital"](around:${radius},${lat},${lng});way["amenity"="hospital"](around:${radius},${lat},${lng});node["amenity"="clinic"](around:${radius},${lat},${lng});node["amenity"="health_post"](around:${radius},${lat},${lng});node["amenity"="police"](around:${radius},${lat},${lng});node["amenity"="fire_station"](around:${radius},${lat},${lng});node["building"="hospital"](around:${radius},${lat},${lng});node["healthcare"="hospital"](around:${radius},${lat},${lng}););out center;`;
+  var radius = 10000; 
+  var query = `[out:json][timeout:25];(node["emergency"="shelter"](around:${radius},${lat},${lng});way["emergency"="shelter"](around:${radius},${lat},${lng});node["amenity"="shelter"](around:${radius},${lat},${lng});node["amenity"="hospital"](around:${radius},${lat},${lng});way["amenity"="hospital"](around:${radius},${lat},${lng});node["amenity"="clinic"](around:${radius},${lat},${lng});node["amenity"="health_post"](around:${radius},${lat},${lng});node["amenity"="police"](around:${radius},${lat},${lng});node["amenity"="fire_station"](around:${radius},${lat},${lng});node["building"="hospital"](around:${radius},${lat},${lng});node["healthcare"="hospital"](around:${radius},${lat},${lng}););out center;`;
 
-      // Fallback clean parsing system avoids Content-Type header rejection chains
-      try {
-        console.log("Connecting to standard Overpass API...");
-let response = await fetch('https://overpass-api.de/api/interpreter', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-  body: 'data=' + encodeURIComponent(query)
-});
+  const endpoints = [
+    "https://overpass-api.de/api/interpreter?data=",
+    "https://lz4.overpass-api.de/api/interpreter?data=",
+    "https://overpass.kumi.systems/api/interpreter?data="
+  ];
 
-        if (!response.ok) throw new Error("French engine shifted");
-        
-        let data = await response.json();
-        processSafeZoneData(data, lat, lng);
+  let success = false;
 
-      } catch (err1) {
-        console.warn("Primary path shifted. Trying secondary database cluster...", err1);
-        
-        try {
-          let response2 = await fetch('https://overpass.kumi.systems/api/interpreter', {
-            method: 'POST',
-            body: 'data=' + encodeURIComponent(query)
-          });
-
-          if (!response2.ok) throw new Error("Fallback execution failed");
-          
-          let data2 = await response2.json();
-          processSafeZoneData(data2, lat, lng);
-          
-        } catch (err2) {
-          console.error("All map clusters unreachable", err2);
-          setStatus('❌ Network error loading safe zones. Showing Google Maps links below.');
-          showManualLinks();
-        }
-      }
+  for (let base of endpoints) {
+    try {
+      console.log("Fetching map data from:", base);
+      let response = await fetch(base + encodeURIComponent(query));
+      if (!response.ok) throw new Error("Status " + response.status);
+      let data = await response.json();
+      processSafeZoneData(data, lat, lng);
+      success = true;
+      break;
+    } catch (err) {
+      console.warn("Node failed, switching to backup...", err);
     }
+  }
+
+  if (!success) {
+    setStatus('❌ Network error loading safe zones. Showing Google Maps links below.');
+    showManualLinks();
+  }
+}
+    
 
     function processSafeZoneData(data, lat, lng) {
       if (!data.elements || data.elements.length === 0) {
