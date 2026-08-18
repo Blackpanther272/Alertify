@@ -62,10 +62,14 @@
     />
   </div>
 
-  <!-- 2. State & District (Clean 50/50 Grid Row Below Mobile) -->
-  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 0px;">
-    <input type="text" id="regState" placeholder="State (e.g. Odisha)" />
-    <input type="text" id="regDistrict" placeholder="District (e.g. Khordha)" />
+  <!-- 2. State & District Dropdowns (Dynamic API Load) -->
+  <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+    <select id="regState" required>
+      <option value="">🗺️ Select State *</option>
+    </select>
+    <select id="regDistrict" required>
+      <option value="">📍 Select District *</option>
+    </select>
   </div>
 
   <div class="password-wrapper">
@@ -163,8 +167,74 @@ function togglePass(id, icon) {
   if (f.type === "password") { f.type = "text"; icon.textContent = "🙈"; }
   else { f.type = "password"; icon.textContent = "👁"; }
 }
+// ================= DYNAMIC STATES & DISTRICTS LOADING =================
+document.addEventListener("DOMContentLoaded", function() {
+  loadRegisterStates();
+
+  const stateDropdown = document.getElementById("regState");
+  if (stateDropdown) {
+    stateDropdown.addEventListener("change", function() {
+      loadRegisterDistricts(this.value);
+    });
+  }
+});
+
+async function loadRegisterStates() {
+  const stateSelect = document.getElementById("regState");
+  if (!stateSelect) return;
+
+  try {
+    const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    const apiUrl = isLocal ? "http://localhost:5000/api/states" : "https://alertify-backend-r8le.onrender.com/api/states";
+
+    const res = await fetch(apiUrl);
+    const states = await res.json();
+
+    stateSelect.innerHTML = '<option value="">🗺️ Select State *</option>';
+    if (Array.isArray(states)) {
+      states.forEach(st => {
+        const stateName = st.name || st;
+        stateSelect.innerHTML += `<option value="${stateName}">${stateName}</option>`;
+      });
+    }
+  } catch (err) {
+    console.error("Failed to load states:", err);
+  }
+}
+
+async function loadRegisterDistricts(stateName) {
+  const districtSelect = document.getElementById("regDistrict");
+  if (!districtSelect) return;
+
+  districtSelect.innerHTML = '<option value="">⏳ Loading districts...</option>';
+
+  if (!stateName) {
+    districtSelect.innerHTML = '<option value="">📍 Select District *</option>';
+    return;
+  }
+
+  try {
+    const isLocal = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+    const apiUrl = isLocal ? `http://localhost:5000/api/districts?state=${encodeURIComponent(stateName)}` : `https://alertify-backend-r8le.onrender.com/api/districts?state=${encodeURIComponent(stateName)}`;
+
+    const res = await fetch(apiUrl);
+    const districts = await res.json();
+
+    districtSelect.innerHTML = '<option value="">📍 Select District *</option>';
+    if (Array.isArray(districts) && districts.length > 0) {
+      districts.forEach(d => {
+        const distName = d.name || d;
+        districtSelect.innerHTML += `<option value="${distName}">${distName}</option>`;
+      });
+    } else {
+      districtSelect.innerHTML = '<option value="">No districts available</option>';
+    }
+  } catch (err) {
+    console.error("Failed to load districts:", err);
+    districtSelect.innerHTML = '<option value="">📍 Select District *</option>';
+  }
+}
 </script>
-<script src="theme.js"></script>
 <script src="i18n.js"></script>
 </body>
 </html>
