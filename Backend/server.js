@@ -1537,8 +1537,7 @@ app.put("/api/admin/profile", async (req, res) => {
   }
 });
 
-
-// ================= SAFE ZONES (Database-Backed + Cloud Safe) =================
+// ================= SAFE ZONES (Comprehensive Multi-Category) =================
 app.get("/api/safe-zones", async (req, res) => {
   const { lat, lng } = req.query;
   if (!lat || !lng) {
@@ -1550,50 +1549,58 @@ app.get("/api/safe-zones", async (req, res) => {
   const elements = [];
 
   try {
-    // 1. Pull directly from your MongoDB Shelters collection
-    const dbShelters = await Shelter.find({}).lean();
-    dbShelters.forEach(s => {
-      if (s.latitude && s.longitude) {
-        elements.push({
-          lat: s.latitude,
-          lon: s.longitude,
-          tags: {
-            name: s.name,
-            amenity: "shelter",
-            phone: s.contactPhone || ""
-          }
-        });
-      }
-    });
+    // 1. Fetch all registered shelters from your database
+    if (typeof Shelter !== "undefined") {
+      const dbShelters = await Shelter.find({}).lean();
+      dbShelters.forEach(s => {
+        if (s.latitude && s.longitude) {
+          elements.push({
+            lat: parseFloat(s.latitude),
+            lon: parseFloat(s.longitude),
+            tags: {
+              name: s.name || "Relief Shelter",
+              amenity: "shelter",
+              phone: s.contactPhone || ""
+            }
+          });
+        }
+      });
+    }
 
-    // 2. Fetch nearby hospitals/police from Photon (Never blocks Render)
-    try {
-      const photonRes = await axios.get(
-        `https://photon.komoot.io/api/?q=hospital&lat=${userLat}&lon=${userLng}&limit=10`,
-        { timeout: 4000 }
-      );
-      if (photonRes.data && Array.isArray(photonRes.data.features)) {
-        photonRes.data.features.forEach(f => {
-          if (f.geometry && f.geometry.coordinates) {
-            elements.push({
-              lat: f.geometry.coordinates[1],
-              lon: f.geometry.coordinates[0],
-              tags: {
-                name: f.properties.name || "Hospital / Medical Post",
-                amenity: "hospital"
+    // 2. Fetch all emergency categories from Photon OSM (Hospitals, Police, Fire, Clinics)
+    const queries = [
+      { q: "hospital", amenity: "hospital" },
+      { q: "police", amenity: "police" },
+      { q: "fire station", amenity: "fire_station" },
+      { q: "clinic", amenity: "clinic" }
+    ];
+
+    const fetchPromises = queries.map(item =>
+      axios.get(`https://photon.komoot.io/api/?q=${encodeURIComponent(item.q)}&lat=${userLat}&lon=${userLng}&limit=25`, { timeout: 5000 })
+        .then(response => {
+          if (response.data && Array.isArray(response.data.features)) {
+            response.data.features.forEach(f => {
+              if (f.geometry && f.geometry.coordinates) {
+                elements.push({
+                  lat: f.geometry.coordinates[1],
+                  lon: f.geometry.coordinates[0],
+                  tags: {
+                    name: f.properties.name || f.properties.street || `${item.amenity.replace('_', ' ').toUpperCase()}`,
+                    amenity: item.amenity
+                  }
+                });
               }
             });
           }
-        });
-      }
-    } catch (photonErr) {
-      console.warn("Photon external fetch timed out, using database elements only.");
-    }
+        })
+        .catch(() => {})
+    );
 
-    // Always returns 200 OK — zero 502 Bad Gateway errors
+    await Promise.all(fetchPromises);
+
     return res.json({ elements });
   } catch (err) {
-    console.error("Safe zones processing error:", err.message);
+    console.error("Safe zones error:", err.message);
     return res.json({ elements: [] });
   }
 });
