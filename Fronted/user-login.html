@@ -31,7 +31,12 @@
       height: 6px;
       background: linear-gradient(90deg, #2563eb, #0ea5e9, #38bdf8);
     }
-
+/* 🇮🇳 Indian Tricolour Background for Login */
+body:has(.auth-card) {
+  background: linear-gradient(180deg, #ff9933 0%, #ffffff 48%, #ffffff 52%, #138808 100%) !important;
+  min-height: 100vh;
+  background-attachment: fixed;
+}
     .auth-card h2 { 
       margin: 4px 0 6px; 
       font-size: 24px; 
@@ -220,12 +225,12 @@
   <h2>Welcome Back</h2>
   <p class="subtitle">Enter your credentials to access live disaster response and relief services</p>
 
-  <input type="text" id="loginUser" placeholder="Email or 10-digit Mobile Number" autocomplete="username" />
+  <input type="text" id="loginUser" placeholder="Email or 10-digit Mobile Number" autocomplete="off" />
 
-  <div class="password-wrapper">
-    <input type="password" id="loginPass" placeholder="Password" autocomplete="current-password" />
-    <span onclick="togglePass('loginPass', this)">👁</span>
-  </div>
+<div class="password-wrapper">
+  <input type="password" id="loginPass" placeholder="Password" autocomplete="new-password" />
+  <span onclick="togglePass('loginPass', this)">👁</span>
+</div>
   <p class="hint-text">🔒 Your emergency credentials are secure & encrypted</p>
 
   <button class="btn-main" onclick="doLogin()">🚀 Login to Dashboard</button>
@@ -419,7 +424,12 @@ async function doLogin() {
     showToast("❌ Server connection error", false);
   }
 }
-
+window.addEventListener("pageshow", function () {
+  const userField = document.getElementById("loginUser");
+  const passField = document.getElementById("loginPass");
+  if (userField) userField.value = "";
+  if (passField) passField.value = "";
+});
 document.addEventListener("DOMContentLoaded", function() {
   document.getElementById("loginPass").addEventListener("keypress", function(e) {
     if (e.key === "Enter") doLogin();
