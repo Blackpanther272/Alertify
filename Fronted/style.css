@@ -35,13 +35,7 @@ body {
   transform: scale(1.08);
   background: rgba(255, 255, 255, 0.3);
 }
-/* 🇮🇳 Clean Indian Tricolour Gradient Background */
-body.login-page, 
-#loginPage {
-  background: linear-gradient(180deg, #ff9933 0%, #ffffff 48%, #ffffff 52%, #138808 100%) !important;
-  min-height: 100vh;
-  background-attachment: fixed;
-}
+
 /* When in dark mode */
 body.dark-mode .global-theme-btn {
   background: rgba(30, 41, 59, 0.85);
