@@ -1538,50 +1538,67 @@ function toggleAvatarMenu() {
     }
   });
 }
+
 function getLocationSmart(callback) {
+  var gpsDone = false;
+  var gpsStatusEl = document.getElementById("sosGpsStatus");
 
-  // ⚡ STEP 1: INSTANT IP LOCATION
-  if (navigator.onLine) {
-    fetch("https://ipapi.co/json/")
-      .then(res => res.json())
-      .then(data => {
-        const lat = data.latitude;
-        const lng = data.longitude;
-
-        updateGPSStatus("📡 Fast location ready");
-
-        callback(lat, lng, "ip");
-      })
-      .catch(() => {});
+  if (gpsStatusEl) {
+    gpsStatusEl.style.background = "#eff6ff";
+    gpsStatusEl.style.color = "#2563eb";
+    gpsStatusEl.textContent = "📡 Requesting precise GPS location (Please allow permission)...";
   }
 
-  // 🔥 STEP 2: GPS (ACCURATE UPDATE)
-  if (navigator.geolocation) {
+  if (!navigator.geolocation) {
+    alert("❌ Geolocation is not supported by your browser.");
+    callback(null, null, "none");
+    return;
+  }
 
-    navigator.geolocation.getCurrentPosition(
+  // 🔥 Force high-accuracy GPS satellite lock instantly (No fake IP fallback)
+  navigator.geolocation.getCurrentPosition(
+    function(pos) {
+      if (gpsDone) return;
+      gpsDone = true;
 
-      function(pos) {
-        const lat = pos.coords.latitude;
-        const lng = pos.coords.longitude;
+      const lat = pos.coords.latitude;
+      const lng = pos.coords.longitude;
 
-        updateGPSStatus("✅ Accurate GPS location");
-
-        callback(lat, lng, "gps");
-      },
-
-      function() {
-        updateGPSStatus("⚠️ Using network location");
-      },
-
-      {
-        enableHighAccuracy: false,   // 🔥 FAST
-        timeout: 5000,               // 🔥 QUICK
-        maximumAge: 60000            // 🔥 CACHE
+      if (gpsStatusEl) {
+        gpsStatusEl.style.background = "#f0fdf4";
+        gpsStatusEl.style.color = "#16a34a";
+        gpsStatusEl.textContent = "✅ Exact GPS Locked: " + lat.toFixed(5) + ", " + lng.toFixed(5);
       }
-    );
 
-  }
+      callback(lat, lng, "gps");
+    },
+    function(err) {
+      if (gpsDone) return;
+      gpsDone = true;
+
+      console.warn("GPS error or permission denied:", err.message);
+      if (gpsStatusEl) {
+        gpsStatusEl.style.background = "#fef2f2";
+        gpsStatusEl.style.color = "#dc2626";
+        gpsStatusEl.textContent = "❌ Location permission denied or GPS timeout. Please enable GPS.";
+      }
+
+      callback(null, null, "none");
+    },
+    {
+      enableHighAccuracy: true,   // Forces true phone GPS hardware chip
+      timeout: 15000,             // Wait up to 15 seconds for precise satellite lock
+      maximumAge: 0               // Discards cached location data so it's always fresh
+    }
+  );
 }
+
+
+
+
+
+
+
 function useIPLocation(callback) {
 
   // ❌ No internet
