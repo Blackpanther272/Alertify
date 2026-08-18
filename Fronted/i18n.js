@@ -45,7 +45,7 @@ const TRANSLATIONS = {
     langMore:           "More languages coming soon…",
 
     // Index / Home
-    welcomeTitle:       "Welcome to Disaster Management System",
+    welcomeTitle:       "Alertify",
     selectRole:         "Select your role to continue",
     emergencyNums:      "📞 Emergency Numbers — Call Direct (No Internet)",
     numEmergency:       "Emergency",
