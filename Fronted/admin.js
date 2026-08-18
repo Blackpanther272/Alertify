@@ -2126,6 +2126,32 @@ function toggleAdminDarkMode() {
 })();
 
 
+// ================= MASTER ADMIN AUTO-REFRESH (Real-Time Live Feed) =================
+setInterval(function() {
+  // Only poll if the token exists (admin is logged in)
+  if (!localStorage.getItem("token")) return;
+
+  // 1. Silently update SOS list & KPI counter
+  if (typeof loadSOS === "function") {
+    loadSOS();
+  }
+
+  // 2. Silently update Complaints list & KPI counter
+  if (typeof loadComplaints === "function") {
+    loadComplaints();
+  }
+
+  // 3. Silently update Damage Reports list & KPI counter
+  if (typeof loadDamageReports === "function") {
+    loadDamageReports();
+  }
+
+  // 4. Silently update NGO list
+  if (typeof loadNgos === "function") {
+    loadNgos();
+  }
+}, 5000); // Runs every 5 seconds automatically
+
 
 
 
