@@ -21,16 +21,7 @@ function escapeHtml(str) {
     .replace(/'/g, '&#039;');
 }
 
-/**
- * Debounce helper function for search rate limiting
- */
-function debounce(fn, delay = 300) {
-  let timer;
-  return function (...args) {
-    clearTimeout(timer);
-    timer = setTimeout(() => fn.apply(this, args), delay);
-  };
-}
+
 
 /**
  * Cache Manager with sessionStorage persistence
@@ -625,7 +616,7 @@ class DisasterApp {
             locBtn.textContent = '📍 Enable GPS Location';
             const errEl = document.getElementById('locErr');
             if (errEl) {
-              errEl.textContent = 'GPS Permission denied or timed out. Search your village below.';
+              errEl.textContent = 'GPS Permission denied or timed out. Please enable device location and try again.';
               errEl.style.display = 'block';
             }
           },
@@ -634,47 +625,6 @@ class DisasterApp {
       });
     }
 
-    // Debounced Village Search to prevent rate-limiting
-    const searchBtn = document.getElementById('villageSearchBtn');
-    const searchInput = document.getElementById('villageInput');
-
-    const executeSearch = debounce(async () => {
-      const q = searchInput?.value.trim();
-      if (!q || q.length < 2) return;
-
-      if (searchBtn) { searchBtn.textContent = 'Searching…'; searchBtn.disabled = true; }
-
-      try {
-        const res = await fetch(`https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(q)}`, {
-          headers: {
-            'Accept-Language': 'en',
-            'User-Agent': 'DisasterManagementCommandCenter/1.0 (contact@disasterapp.org)'
-          }
-        });
-        if (res.ok) {
-          const results = await res.json();
-          if (results.length > 0) {
-            const overlay = document.getElementById('locOverlay');
-            if (overlay) overlay.style.display = 'none';
-
-            const lat = parseFloat(results[0].lat);
-            const lon = parseFloat(results[0].lon);
-
-            await this.setUserLocation(lat, lon);
-            await Promise.all([this.fetchWeather(), this.fetchQuakes()]);
-          } else {
-            alert('Location not found. Please verify spelling.');
-          }
-        }
-      } catch (e) {
-        console.error('Village search failure', e);
-      } finally {
-        if (searchBtn) { searchBtn.textContent = '🔍 Search'; searchBtn.disabled = false; }
-      }
-    }, 300);
-
-    if (searchBtn) searchBtn.addEventListener('click', executeSearch);
-    if (searchInput) searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') executeSearch(); });
   }
 }
 
