@@ -1538,7 +1538,7 @@ app.put("/api/admin/profile", async (req, res) => {
 });
 
 
-// ================= SAFE ZONES PROXY (Single Fast Query) =================
+// ================= SAFE ZONES (Database-Backed + Cloud Safe) =================
 app.get("/api/safe-zones", async (req, res) => {
   const { lat, lng } = req.query;
   if (!lat || !lng) {
@@ -1547,43 +1547,53 @@ app.get("/api/safe-zones", async (req, res) => {
 
   const userLat = parseFloat(lat);
   const userLng = parseFloat(lng);
-  const delta = 0.06; // Approx 6km bounding box
+  const elements = [];
 
   try {
-    // Single consolidated query with 5-second timeout
-    const url = `https://nominatim.openstreetmap.org/search?q=emergency+hospital+police+fire+shelter&format=json&limit=25&viewbox=${userLng - delta},${userLat + delta},${userLng + delta},${userLat - delta}&bounded=1`;
-    
-    const response = await axios.get(url, {
-      headers: {
-        "User-Agent": "DisasterResponseAlertifyPortal/2.0 (contact: alertify.emergency@gmail.com)"
-      },
-      timeout: 6000
-    });
-
-    const results = [];
-    if (Array.isArray(response.data)) {
-      response.data.forEach(item => {
-        const text = (item.display_name || "").toLowerCase();
-        let amenity = "shelter";
-        if (text.includes("hospital") || text.includes("clinic") || text.includes("medical")) amenity = "hospital";
-        else if (text.includes("police") || text.includes("thana")) amenity = "police";
-        else if (text.includes("fire")) amenity = "fire_station";
-
-        results.push({
-          lat: parseFloat(item.lat),
-          lon: parseFloat(item.lon),
+    // 1. Pull directly from your MongoDB Shelters collection
+    const dbShelters = await Shelter.find({}).lean();
+    dbShelters.forEach(s => {
+      if (s.latitude && s.longitude) {
+        elements.push({
+          lat: s.latitude,
+          lon: s.longitude,
           tags: {
-            name: item.display_name.split(",")[0],
-            amenity: amenity
+            name: s.name,
+            amenity: "shelter",
+            phone: s.contactPhone || ""
           }
         });
-      });
+      }
+    });
+
+    // 2. Fetch nearby hospitals/police from Photon (Never blocks Render)
+    try {
+      const photonRes = await axios.get(
+        `https://photon.komoot.io/api/?q=hospital&lat=${userLat}&lon=${userLng}&limit=10`,
+        { timeout: 4000 }
+      );
+      if (photonRes.data && Array.isArray(photonRes.data.features)) {
+        photonRes.data.features.forEach(f => {
+          if (f.geometry && f.geometry.coordinates) {
+            elements.push({
+              lat: f.geometry.coordinates[1],
+              lon: f.geometry.coordinates[0],
+              tags: {
+                name: f.properties.name || "Hospital / Medical Post",
+                amenity: "hospital"
+              }
+            });
+          }
+        });
+      }
+    } catch (photonErr) {
+      console.warn("Photon external fetch timed out, using database elements only.");
     }
 
-    // Always return 200 with elements array (never throw 502)
-    return res.json({ elements: results });
+    // Always returns 200 OK — zero 502 Bad Gateway errors
+    return res.json({ elements });
   } catch (err) {
-    console.warn("Upstream map query slow/blocked, returning empty fallback list:", err.message);
+    console.error("Safe zones processing error:", err.message);
     return res.json({ elements: [] });
   }
 });
