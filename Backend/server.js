@@ -355,23 +355,20 @@ app.post("/api/login", async (req, res) => {
 
       console.log(`[ADMIN LOGIN OTP] Code for ${user.email} (${user.adminId}) is: ${otp}`);
 
-      try {
-        await transporter.sendMail({
-          from: `"Alertify Command Center" <${process.env.EMAIL_USER}>`,
-          to: user.email,
-          subject: "🛡️ Admin 2FA Login Code",
-          html: `
-            <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; max-width: 480px;">
-              <h2 style="color: #7c3aed; margin-top: 0;">Admin Security Verification</h2>
-              <p>Your login OTP for Admin ID <strong>${user.adminId}</strong> is:</p>
-              <h1 style="font-size: 32px; letter-spacing: 6px; color: #1e293b; background: #f5f3ff; padding: 12px; border-radius: 8px; text-align: center;">${otp}</h1>
-              <p style="color: #64748b; font-size: 13px;">Expires in 5 minutes.</p>
-            </div>
-          `
-        });
-      } catch (mailErr) {
-        console.error("Email send failed:", mailErr.message);
-      }
+     // Send email asynchronously in background so login responds instantly
+      transporter.sendMail({
+        from: `"Alertify Command Center" <${process.env.EMAIL_USER}>`,
+        to: user.email,
+        subject: "🛡️ Admin 2FA Login Code",
+        html: `
+          <div style="font-family: Arial, sans-serif; padding: 20px; border: 1px solid #e2e8f0; border-radius: 10px; max-width: 480px;">
+            <h2 style="color: #7c3aed; margin-top: 0;">Admin Security Verification</h2>
+            <p>Your login OTP for Admin ID <strong>${user.adminId}</strong> is:</p>
+            <h1 style="font-size: 32px; letter-spacing: 6px; color: #1e293b; background: #f5f3ff; padding: 12px; border-radius: 8px; text-align: center;">${otp}</h1>
+            <p style="color: #64748b; font-size: 13px;">Expires in 5 minutes.</p>
+          </div>
+        `
+      }).catch(err => console.error("Background email error:", err.message));
 
       const maskedEmail = user.email.replace(/(.{2})(.*)(?=@)/, (g1, g2, g3) => g2 + "*".repeat(g3.length));
       return res.json({
