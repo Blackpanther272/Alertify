@@ -1538,7 +1538,37 @@ app.put("/api/admin/profile", async (req, res) => {
 });
 
 
+app.get("/api/safe-zones", async (req, res) => {
+  const { lat, lng } = req.query;
+  if (!lat || !lng) {
+    return res.status(400).json({ message: "Latitude and longitude required" });
+  }
 
+  const radius = 10000;
+  const query = `[out:json][timeout:25];(node["emergency"="shelter"](around:${radius},${lat},${lng});way["emergency"="shelter"](around:${radius},${lat},${lng});node["amenity"="shelter"](around:${radius},${lat},${lng});node["amenity"="hospital"](around:${radius},${lat},${lng});way["amenity"="hospital"](around:${radius},${lat},${lng});node["amenity"="clinic"](around:${radius},${lat},${lng});node["amenity"="health_post"](around:${radius},${lat},${lng});node["amenity"="police"](around:${radius},${lat},${lng});node["amenity"="fire_station"](around:${radius},${lat},${lng});node["building"="hospital"](around:${radius},${lat},${lng});node["healthcare"="hospital"](around:${radius},${lat},${lng}););out center;`;
+
+  const servers = [
+    "https://overpass-api.de/api/interpreter",
+    "https://lz4.overpass-api.de/api/interpreter",
+    "https://overpass.kumi.systems/api/interpreter"
+  ];
+
+  for (let server of servers) {
+    try {
+      const response = await fetch(server, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: "data=" + encodeURIComponent(query)
+      });
+      if (response.ok) {
+        const data = await response.json();
+        return res.json(data);
+      }
+    } catch (e) {}
+  }
+
+  res.status(502).json({ message: "Could not fetch safe zones" });
+});
 
 
 
